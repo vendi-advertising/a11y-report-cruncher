@@ -23,7 +23,7 @@ class PropertyScan
     private $propertyId;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
     private $DateTimeCreated;
 
