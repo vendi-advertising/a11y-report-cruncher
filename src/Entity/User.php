@@ -40,6 +40,11 @@ class User implements UserInterface
      */
     private $clients;
 
+    /**
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     */
+    private $dateTimeCreated;
+
     public function __construct()
     {
         $this->clients = new ArrayCollection();
@@ -145,6 +150,18 @@ class User implements UserInterface
         if ($this->clients->contains($client)) {
             $this->clients->removeElement($client);
         }
+
+        return $this;
+    }
+
+    public function getDateTimeCreated(): ?\DateTimeInterface
+    {
+        return $this->dateTimeCreated;
+    }
+
+    public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
+    {
+        $this->dateTimeCreated = $dateTimeCreated;
 
         return $this;
     }

@@ -34,6 +34,11 @@ class Property
      */
     private $propertyScans;
 
+    /**
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     */
+    private $dateTimeCreated;
+
     public function __construct()
     {
         $this->propertyScans = new ArrayCollection();
@@ -95,6 +100,18 @@ class Property
                 $propertyScan->setPropertyId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDateTimeCreated(): ?\DateTimeInterface
+    {
+        return $this->dateTimeCreated;
+    }
+
+    public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
+    {
+        $this->dateTimeCreated = $dateTimeCreated;
 
         return $this;
     }

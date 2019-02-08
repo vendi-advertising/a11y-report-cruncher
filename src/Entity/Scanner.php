@@ -27,6 +27,11 @@ class Scanner
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     */
+    private $dateTimeCreated;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,6 +57,18 @@ class Scanner
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getDateTimeCreated(): ?\DateTimeInterface
+    {
+        return $this->dateTimeCreated;
+    }
+
+    public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
+    {
+        $this->dateTimeCreated = $dateTimeCreated;
 
         return $this;
     }
