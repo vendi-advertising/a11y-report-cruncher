@@ -27,12 +27,6 @@ class ScanBatch
      */
     private $dateTimeExpires;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScanUrl")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $propertyScanUrlId;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -58,18 +52,6 @@ class ScanBatch
     public function setDateTimeExpires(\DateTimeInterface $dateTimeExpires): self
     {
         $this->dateTimeExpires = $dateTimeExpires;
-
-        return $this;
-    }
-
-    public function getPropertyScanUrlId(): ?PropertyScanUrl
-    {
-        return $this->propertyScanUrlId;
-    }
-
-    public function setPropertyScanUrlId(?PropertyScanUrl $propertyScanUrlId): self
-    {
-        $this->propertyScanUrlId = $propertyScanUrlId;
 
         return $this;
     }
