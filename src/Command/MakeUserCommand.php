@@ -4,7 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-class MakeUserCommand extends ContainerAwareCommand
+class MakeUserCommand extends Command
 {
     protected static $defaultName = 'app:make:user';
 
@@ -52,14 +52,13 @@ class MakeUserCommand extends ContainerAwareCommand
                     }
 
                     $previous_user = $this
-                                    ->getContainer()
-                                    ->get('doctrine')
-                                    ->getRepository(User::class)
-                                    ->findOneBy(
-                                        array(
-                                            'email' => $email,
+                                        ->entityManager
+                                        ->getRepository(User::class)
+                                        ->findOneBy(
+                                            array(
+                                                'email' => $email,
+                                            )
                                         )
-                                    )
                     ;
 
                     if($previous_user){
