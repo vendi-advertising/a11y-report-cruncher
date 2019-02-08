@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,11 +18,13 @@ class MakeUserCommand extends ContainerAwareCommand
     protected static $defaultName = 'app:make:user';
 
     private $passwordEncoder;
+    private $entityManager;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager, UserPasswordEncoderInterface $passwordEncoder)
     {
         parent::__construct();
         $this->passwordEncoder = $passwordEncoder;
+        $this->entityManager = $entityManager;
     }
 
     protected function configure()
@@ -90,9 +93,8 @@ class MakeUserCommand extends ContainerAwareCommand
                 )
         );
 
-        $entityManager = $this->getContainer()->get('doctrine')->getManager();
-        $entityManager->persist($user);
-        $entityManager->flush();
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         $io->success("Successfully create new user {$email}");
     }
