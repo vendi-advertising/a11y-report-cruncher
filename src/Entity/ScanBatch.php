@@ -35,13 +35,14 @@ class ScanBatch
     private $scanBatchUrls;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
 
     public function __construct()
     {
         $this->scanBatchUrls = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int

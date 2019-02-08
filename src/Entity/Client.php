@@ -34,7 +34,7 @@ class Client
     private $properties;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
 
@@ -42,6 +42,7 @@ class Client
     {
         $this->users = new ArrayCollection();
         $this->properties = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int

@@ -35,13 +35,14 @@ class Property
     private $propertyScans;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
 
     public function __construct()
     {
         $this->propertyScans = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int

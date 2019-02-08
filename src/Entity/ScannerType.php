@@ -29,13 +29,14 @@ class ScannerType
     private $scanners;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
 
     public function __construct()
     {
         $this->scanners = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int

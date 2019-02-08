@@ -30,7 +30,7 @@ class Scanner
     private $name;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
 
@@ -42,6 +42,7 @@ class Scanner
     public function __construct()
     {
         $this->propertyScanUrlLogs = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int

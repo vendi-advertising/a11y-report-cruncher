@@ -25,7 +25,7 @@ class PropertyScan
     private $propertyId;
 
     /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime")
      */
     private $DateTimeCreated;
 
@@ -37,6 +37,7 @@ class PropertyScan
     public function __construct()
     {
         $this->propertyScanUrls = new ArrayCollection();
+        $this->dateTimeCreated = new \DateTime();
     }
 
     public function getId(): ?int
