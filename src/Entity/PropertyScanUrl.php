@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\ScannerRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\PropertyScanUrlRepository")
  */
-class Scanner
+class PropertyScanUrl
 {
     /**
      * @ORM\Id()
@@ -19,23 +19,18 @@ class Scanner
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ScannerType", inversedBy="scanners")
+     * @ORM\Column(type="string", length=2048)
+     */
+    private $url;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScan", inversedBy="propertyScanUrls")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $scannerType;
+    private $propertyScanId;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
-
-    /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
-     */
-    private $dateTimeCreated;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="scannerId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="propertyScanUrlId", orphanRemoval=true)
      */
     private $propertyScanUrlLogs;
 
@@ -49,38 +44,26 @@ class Scanner
         return $this->id;
     }
 
-    public function getScannerType(): ?ScannerType
+    public function getUrl(): ?string
     {
-        return $this->scannerType;
+        return $this->url;
     }
 
-    public function setScannerType(?ScannerType $scannerType): self
+    public function setUrl(string $url): self
     {
-        $this->scannerType = $scannerType;
+        $this->url = $url;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getPropertyScanId(): ?PropertyScan
     {
-        return $this->name;
+        return $this->propertyScanId;
     }
 
-    public function setName(string $name): self
+    public function setPropertyScanId(?PropertyScan $propertyScanId): self
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getDateTimeCreated(): ?\DateTimeInterface
-    {
-        return $this->dateTimeCreated;
-    }
-
-    public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
-    {
-        $this->dateTimeCreated = $dateTimeCreated;
+        $this->propertyScanId = $propertyScanId;
 
         return $this;
     }
@@ -97,7 +80,7 @@ class Scanner
     {
         if (!$this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs[] = $propertyScanUrlLog;
-            $propertyScanUrlLog->setScannerId($this);
+            $propertyScanUrlLog->setPropertyScanUrlId($this);
         }
 
         return $this;
@@ -108,8 +91,8 @@ class Scanner
         if ($this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs->removeElement($propertyScanUrlLog);
             // set the owning side to null (unless already changed)
-            if ($propertyScanUrlLog->getScannerId() === $this) {
-                $propertyScanUrlLog->setScannerId(null);
+            if ($propertyScanUrlLog->getPropertyScanUrlId() === $this) {
+                $propertyScanUrlLog->setPropertyScanUrlId(null);
             }
         }
 
