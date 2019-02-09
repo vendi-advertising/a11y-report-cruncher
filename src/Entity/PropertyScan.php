@@ -22,12 +22,12 @@ class PropertyScan
      * @ORM\ManyToOne(targetEntity="App\Entity\Property", inversedBy="propertyScans")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $propertyId;
+    private $property;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $DateTimeCreated;
+    private $dateTimeCreated;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrl", mappedBy="propertyScanId", orphanRemoval=true)
@@ -45,26 +45,26 @@ class PropertyScan
         return $this->id;
     }
 
-    public function getPropertyId(): ?Property
+    public function getProperty(): ?Property
     {
-        return $this->propertyId;
+        return $this->property;
     }
 
-    public function setPropertyId(?Property $propertyId): self
+    public function setProperty(?Property $property): self
     {
-        $this->propertyId = $propertyId;
+        $this->property = $property;
 
         return $this;
     }
 
     public function getDateTimeCreated(): ?\DateTimeInterface
     {
-        return $this->DateTimeCreated;
+        return $this->dateTimeCreated;
     }
 
-    public function setDateTimeCreated(\DateTimeInterface $DateTimeCreated): self
+    public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
     {
-        $this->DateTimeCreated = $DateTimeCreated;
+        $this->dateTimeCreated = $dateTimeCreated;
 
         return $this;
     }

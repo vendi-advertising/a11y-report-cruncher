@@ -91,7 +91,7 @@ class Property
     {
         if (!$this->propertyScans->contains($propertyScan)) {
             $this->propertyScans[] = $propertyScan;
-            $propertyScan->setPropertyId($this);
+            $propertyScan->setProperty($this);
         }
 
         return $this;
@@ -102,8 +102,8 @@ class Property
         if ($this->propertyScans->contains($propertyScan)) {
             $this->propertyScans->removeElement($propertyScan);
             // set the owning side to null (unless already changed)
-            if ($propertyScan->getPropertyId() === $this) {
-                $propertyScan->setPropertyId(null);
+            if ($propertyScan->getProperty() === $this) {
+                $propertyScan->setProperty(null);
             }
         }
 
