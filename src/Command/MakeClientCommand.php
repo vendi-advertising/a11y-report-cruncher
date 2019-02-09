@@ -1,13 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
 use App\Entity\Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -44,18 +42,17 @@ class MakeClientCommand extends Command
             )
             ->setValidator(
                 function ($client_name) {
-
                     $previous_client = $this
                                         ->entityManager
                                         ->getRepository(Client::class)
                                         ->findOneBy(
-                                            array(
+                                            [
                                                 'name' => $client_name,
-                                            )
+                                            ]
                                         )
                     ;
 
-                    if($previous_client){
+                    if ($previous_client) {
                         throw new \RuntimeException('A client with that name already exists');
                     }
 

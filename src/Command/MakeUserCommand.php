@@ -1,13 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -73,7 +71,7 @@ class MakeUserCommand extends Command
 
         $is_new_user = is_null($user);
         $is_dirty = false;
-        if($is_new_user){
+        if ($is_new_user) {
             $user = new User();
             $user->setEmail($email);
             $is_dirty = true;
@@ -84,13 +82,13 @@ class MakeUserCommand extends Command
             'perform_password_question',
         ];
 
-        foreach($methods as $method){
-            if($this->$method($user, $is_new_user)){
+        foreach ($methods as $method) {
+            if ($this->$method($user, $is_new_user)) {
                 $is_dirty = true;
             }
         }
 
-        if(!$is_dirty){
+        if (!$is_dirty) {
             $io->note('No changes to the user\'s information were detected so no work was done');
             return;
         }
@@ -98,9 +96,9 @@ class MakeUserCommand extends Command
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        if($is_new_user){
+        if ($is_new_user) {
             $io->success("Successfully created new user {$email}");
-        }else{
+        } else {
             $io->success("Successfully updated user {$email}");
         }
     }
@@ -111,24 +109,22 @@ class MakeUserCommand extends Command
                     ->entityManager
                     ->getRepository(User::class)
                     ->findOneBy(
-                        array(
+                        [
                             'email' => $email,
-                        )
+                        ]
                     )
         ;
-
     }
 
     protected function perform_email_change_question(User $user, bool $is_new_user) : bool
     {
-        if($is_new_user){
+        if ($is_new_user) {
             //Don't offer for new users, that's just stupid
             return false;
         }
 
-        while(true){
-
-            if(!$this->ask_yes_or_no_question('Would you like to change the user\'s email? ', false)){
+        while (true) {
+            if (!$this->ask_yes_or_no_question('Would you like to change the user\'s email? ', false)) {
                 return false;
             }
 
@@ -148,7 +144,7 @@ class MakeUserCommand extends Command
                                         throw new \RuntimeException('Please enter a valid email address');
                                     }
 
-                                    if($this->get_user_by_email($email)){
+                                    if ($this->get_user_by_email($email)) {
                                         throw new \RuntimeException('That email address is already in use');
                                     }
 
@@ -161,16 +157,13 @@ class MakeUserCommand extends Command
             $user->setEmail($email);
 
             return true;
-
         }
-
-
     }
 
     protected function perform_password_question(User $user, bool $is_new_user) : bool
     {
-        if(!$is_new_user){
-            if(!$this->ask_yes_or_no_question('Would you like to change the user\'s password? ', false)){
+        if (!$is_new_user) {
+            if (!$this->ask_yes_or_no_question('Would you like to change the user\'s password? ', false)) {
                 return false;
             }
         }
@@ -197,7 +190,7 @@ class MakeUserCommand extends Command
 
     protected function ask_yes_or_no_question(string $question, bool $default_value) : bool
     {
-        $question = new ConfirmationQuestion( $question, $default_value );
+        $question = new ConfirmationQuestion($question, $default_value);
         return $this->getHelper('question')->ask($this->input, $this->output, $question);
     }
 }
