@@ -12,6 +12,29 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
+    public const ROLE_GLOBAL_ADMIN = 'ROLE_GLOBAL_ADMIN';
+
+    public const ROLE_CLIENT_ADMIN = 'ROLE_CLIENT_ADMIN';
+
+    public const ROLE_PROPERTY_ADMIN = 'ROLE_PROPERTY_ADMIN';
+
+    public const ROLE_USER = 'ROLE_USER';
+
+    public static function get_all_possible_roles() : array
+    {
+        return [
+            self::ROLE_GLOBAL_ADMIN,
+            self::ROLE_CLIENT_ADMIN,
+            self::ROLE_PROPERTY_ADMIN,
+            self::ROLE_USER,
+        ];
+    }
+
+    public static function get_required_role() : string
+    {
+        return self::ROLE_USER;
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -85,7 +108,7 @@ class User implements UserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles[] = self::get_required_role();
 
         return array_unique($roles);
     }

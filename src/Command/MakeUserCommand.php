@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -80,6 +81,7 @@ class MakeUserCommand extends Command
         $methods = [
             'perform_email_change_question',
             'perform_password_question',
+            'perform_role_question',
         ];
 
         foreach ($methods as $method) {
@@ -158,6 +160,30 @@ class MakeUserCommand extends Command
 
             return true;
         }
+    }
+
+    protected function perform_role_question(User $user, bool $is_new_user) : bool
+    {
+        if (!$is_new_user) {
+            if (!$this->ask_yes_or_no_question('Would you like to change the user\'s role? ', false)) {
+                return false;
+            }
+        }
+
+        $all_roles = array_diff(User::get_all_possible_roles(), [User::get_required_role()]);
+
+        $question = new ChoiceQuestion(
+            sprintf('User roles (the role %1$s is required and cannot be unset)', User::get_required_role()),
+            $all_roles,
+            ''
+        );
+        $question->setMultiselect(true);
+
+        $user_roles = $this->getHelper('question')->ask($this->input, $this->output, $question);
+        $user_roles[] = User::get_required_role();
+        $user->setRoles($user_roles);
+
+        return true;
     }
 
     protected function perform_password_question(User $user, bool $is_new_user) : bool
