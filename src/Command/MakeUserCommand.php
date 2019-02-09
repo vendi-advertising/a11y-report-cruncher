@@ -58,7 +58,7 @@ class MakeUserCommand extends Command
 
         //Allow this to come in on the actual command line
         $email = $input->getArgument('email');
-        if(!$email){
+        if (!$email) {
 
             //If we didn't pass one in, prompt here
             $question = (new Question('What is the user\'s email address? '))
@@ -173,8 +173,7 @@ class MakeUserCommand extends Command
         $names = [];
         array_walk(
             $clients,
-            function(Client $client) use (&$names)
-            {
+            function (Client $client) use (&$names) {
                 $names[] = $client->getName();
             }
         )
@@ -191,7 +190,6 @@ class MakeUserCommand extends Command
         }
 
         while (true) {
-
             if (!$this->ask_yes_or_no_question('Would you like to change the user\'s email?', false)) {
                 return false;
             }
@@ -254,7 +252,7 @@ class MakeUserCommand extends Command
 
     protected function do_client_action__erase(User $user)
     {
-        foreach($user->getClients() as $c){
+        foreach ($user->getClients() as $c) {
             $user->removeClient($c);
         }
     }
@@ -262,14 +260,14 @@ class MakeUserCommand extends Command
     protected function do_client_action__view(User $user)
     {
         $clients = $user->getClients();
-        if(!count($clients)){
+        if (!count($clients)) {
             $io = new SymfonyStyle($this->input, $this->output);
             $io->note('No clients assigned to user');
             return;
         }
 
         $client_data = [];
-        foreach($clients as $c){
+        foreach ($clients as $c) {
             $client_data[] = [$c->getId(), $c->getName()];
         }
 
@@ -282,14 +280,14 @@ class MakeUserCommand extends Command
 
     protected function do_client_action__add_or_remove(User $user, string $add_or_remove)
     {
-        switch($add_or_remove){
+        switch ($add_or_remove) {
             case 'add':
                 $client_names = $this->get_all_client_names();
                 break;
 
             case 'remove':
                 $client_names = array_map(
-                    function($v){
+                    function ($v) {
                         return $v->getName();
                     },
                     \iterator_to_array($user->getClients())
@@ -303,13 +301,13 @@ class MakeUserCommand extends Command
 
         $question = (new Question('Please enter the client name or press return to cancel'))
                         ->setAutocompleterValues($client_names)
-                        ->setValidator
-                            (function ($client_name) use ($client_names) {
-                                if(!$client_name){
+                        ->setValidator(
+                            function ($client_name) use ($client_names) {
+                                if (!$client_name) {
                                     return '';
                                 }
 
-                                if(!in_array($client_name, $client_names)){
+                                if (!in_array($client_name, $client_names)) {
                                     throw new \RuntimeException('Client not found ');
                                 }
 
@@ -320,18 +318,18 @@ class MakeUserCommand extends Command
 
         $client_name = $this->getHelper('question')->ask($this->input, $this->output, $question);
 
-        if(!$client_name){
+        if (!$client_name) {
             return;
         }
 
         $client = $this->get_client_by_name($client_name);
-        if(!$client){
+        if (!$client) {
             $io = new SymfonyStyle($this->input, $this->output);
             $io->caution('Could not find the supplied client');
             return;
         }
 
-        switch($add_or_remove){
+        switch ($add_or_remove) {
             case 'add':
                 $user->addClient($client);
                 break;
@@ -349,7 +347,7 @@ class MakeUserCommand extends Command
     {
         if ($is_new_user) {
             $text = 'Would you like to assign clients now? (This is not needed for Global Admins)';
-        }else{
+        } else {
             $text = 'Would you like to change the user\'s clients? (This is not needed for Global Admins)';
         }
 
@@ -364,13 +362,12 @@ class MakeUserCommand extends Command
         //appending this comment, but, well, you know, I already started typing
         //and all.
         $cloned_user = new User();
-        foreach($user->getClients() as $c){
+        foreach ($user->getClients() as $c) {
             $cloned_user->addClient($c);
         }
 
-        while(true){
-
-            $question = (new ChoiceQuestion( 'What would you like to do', self::get_all_client_options()))
+        while (true) {
+            $question = (new ChoiceQuestion('What would you like to do', self::get_all_client_options()))
                             ->setNormalizer(
                                 function ($value) {
                                     $value = strtoupper(trim($value ?? '')) . '!';
@@ -378,11 +375,11 @@ class MakeUserCommand extends Command
                                     return $char;
                                 }
                             )
-                            ->setValidator
-                                (function ($answer) {
+                            ->setValidator(
+                                function ($answer) {
                                     $client_options = self::get_all_client_options();
 
-                                    if(!array_key_exists($answer, $client_options)){
+                                    if (!array_key_exists($answer, $client_options)) {
                                         throw new \RuntimeException('Please enter one of the supplied options');
                                     }
 
@@ -392,7 +389,7 @@ class MakeUserCommand extends Command
             ;
 
             $what_to_do = $this->getHelper('question')->ask($this->input, $this->output, $question);
-            switch($what_to_do){
+            switch ($what_to_do) {
                 case self::CLIENT_OPTION_ADD:
                     $this->do_client_action__add_or_remove($cloned_user, 'add');
                     break;
@@ -418,7 +415,7 @@ class MakeUserCommand extends Command
                     $this->do_client_action__erase($user);
 
                     //Copy from the clone
-                    foreach($cloned_user->getClients() as $c){
+                    foreach ($cloned_user->getClients() as $c) {
                         $user->addClient($c);
                         $c->addUser($user);
                     }
@@ -431,7 +428,6 @@ class MakeUserCommand extends Command
         }
 
         return true;
-
     }
 
     protected function perform_password_question(User $user, bool $is_new_user) : bool
