@@ -45,30 +45,28 @@ class MakeUserCommand extends Command
         $this->output = $output;
 
         $io = new SymfonyStyle($input, $output);
-        $helper = $this->getHelper('question');
 
         $question = (new Question('What is the user\'s email address? '))
+                        //Trim extra whitespace
+                        ->setNormalizer(
+                            function ($value) {
+                                return $value ? trim($value) : '';
+                            }
+                        )
 
-            //Trim extra whitespace
-            ->setNormalizer(
-                function ($value) {
-                    return $value ? trim($value) : '';
-                }
-            )
+                        //Force a valid email address
+                        ->setValidator(
+                            function ($email) {
+                                if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
+                                    throw new \RuntimeException('Please enter a valid email address');
+                                }
 
-            //Force a valid email address
-            ->setValidator(
-                function ($email) {
-                    if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-                        throw new \RuntimeException('Please enter a valid email address');
-                    }
-
-                    return $email;
-                }
-            )
+                                return $email;
+                            }
+                        )
         ;
 
-        $email = $helper->ask($input, $output, $question);
+        $email = $this->getHelper('question')->ask($input, $output, $question);
 
         //Try getting the current user
         $user = $this->get_user_by_email($email);
@@ -134,33 +132,32 @@ class MakeUserCommand extends Command
                 return false;
             }
 
-            $helper = $this->getHelper('question');
             $question = (new Question('What is the user\'s new email address? '))
 
-                //Trim extra whitespace
-                ->setNormalizer(
-                    function ($value) {
-                        return $value ? trim($value) : '';
-                    }
-                )
+                            //Trim extra whitespace
+                            ->setNormalizer(
+                                function ($value) {
+                                    return $value ? trim($value) : '';
+                                }
+                            )
 
-                //Force a valid email address
-                ->setValidator(
-                    function ($email) {
-                        if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-                            throw new \RuntimeException('Please enter a valid email address');
-                        }
+                            //Force a valid email address
+                            ->setValidator(
+                                function ($email) {
+                                    if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
+                                        throw new \RuntimeException('Please enter a valid email address');
+                                    }
 
-                        if($this->get_user_by_email($email)){
-                            throw new \RuntimeException('That email address is already in use');
-                        }
+                                    if($this->get_user_by_email($email)){
+                                        throw new \RuntimeException('That email address is already in use');
+                                    }
 
-                        return $email;
-                    }
-                )
+                                    return $email;
+                                }
+                            )
             ;
 
-            $email = $helper->ask($this->input, $this->output, $question);
+            $email = $this->getHelper('question')->ask($this->input, $this->output, $question);
             $user->setEmail($email);
 
             return true;
@@ -184,7 +181,7 @@ class MakeUserCommand extends Command
         $question->setHiddenFallback(false);
 
         //Ask it
-        $password = $helper->ask($this->input, $this->output, $question);
+        $password = $this->getHelper('question')->ask($this->input, $this->output, $question);
 
         $user->setPassword(
             $this
@@ -200,8 +197,7 @@ class MakeUserCommand extends Command
 
     protected function ask_yes_or_no_question(string $question, bool $default_value) : bool
     {
-        $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion( $question, $default_value );
-        return $helper->ask($this->input, $this->output, $question);
+        return $this->getHelper('question')->ask($this->input, $this->output, $question);
     }
 }
