@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Property;
 use App\Entity\PropertyScan;
+use App\Entity\PropertyScanUrl;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -69,8 +70,14 @@ class MakePropertyScanCommand extends Command
             return;
         }
 
+        $property_scan_url = new PropertyScanUrl();
+        $property_scan_url->setUrl($property->getRootUrl());
+
+        $this->entityManager->persist($property_scan_url);
+
         $property_scan = new PropertyScan();
         $property_scan->setProperty($property);
+        $property_scan->addPropertyScanUrl($property_scan_url);
 
         $this->entityManager->persist($property_scan);
         $this->entityManager->flush();
