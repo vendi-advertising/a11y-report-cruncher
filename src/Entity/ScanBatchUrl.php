@@ -20,39 +20,39 @@ class ScanBatchUrl
      * @ORM\ManyToOne(targetEntity="App\Entity\ScanBatch", inversedBy="scanBatchUrls")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $scanBatchId;
+    private $scanBatch;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScanUrl")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $propertyScanUrlId;
+    private $propertyScanUrl;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getScanBatchId(): ?ScanBatch
+    public function getScanBatch(): ?ScanBatch
     {
-        return $this->scanBatchId;
+        return $this->scanBatch;
     }
 
-    public function setScanBatchId(?ScanBatch $scanBatchId): self
+    public function setScanBatch(?ScanBatch $scanBatch): self
     {
-        $this->scanBatchId = $scanBatchId;
+        $this->scanBatch = $scanBatch;
 
         return $this;
     }
 
-    public function getPropertyScanUrlId(): ?PropertyScanUrl
+    public function getPropertyScanUrl(): ?PropertyScanUrl
     {
-        return $this->propertyScanUrlId;
+        return $this->propertyScanUrl;
     }
 
-    public function setPropertyScanUrlId(?PropertyScanUrl $propertyScanUrlId): self
+    public function setPropertyScanUrl(?PropertyScanUrl $propertyScanUrl): self
     {
-        $this->propertyScanUrlId = $propertyScanUrlId;
+        $this->propertyScanUrl = $propertyScanUrl;
 
         return $this;
     }

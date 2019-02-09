@@ -22,7 +22,7 @@ class ScanBatch
      * @ORM\ManyToOne(targetEntity="App\Entity\Scanner")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $scannerId;
+    private $scanner;
 
     /**
      * @ORM\Column(type="datetime")
@@ -30,7 +30,7 @@ class ScanBatch
     private $dateTimeExpires;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ScanBatchUrl", mappedBy="scanBatchId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\ScanBatchUrl", mappedBy="scanBatch", orphanRemoval=true)
      */
     private $scanBatchUrls;
 
@@ -50,14 +50,14 @@ class ScanBatch
         return $this->id;
     }
 
-    public function getScannerId(): ?Scanner
+    public function getScanner(): ?Scanner
     {
-        return $this->scannerId;
+        return $this->scanner;
     }
 
-    public function setScannerId(?Scanner $scannerId): self
+    public function setScanner(?Scanner $scanner): self
     {
-        $this->scannerId = $scannerId;
+        $this->scanner = $scanner;
 
         return $this;
     }
@@ -86,7 +86,7 @@ class ScanBatch
     {
         if (!$this->scanBatchUrls->contains($scanBatchUrl)) {
             $this->scanBatchUrls[] = $scanBatchUrl;
-            $scanBatchUrl->setScanBatchId($this);
+            $scanBatchUrl->setScanBatch($this);
         }
 
         return $this;
@@ -97,8 +97,8 @@ class ScanBatch
         if ($this->scanBatchUrls->contains($scanBatchUrl)) {
             $this->scanBatchUrls->removeElement($scanBatchUrl);
             // set the owning side to null (unless already changed)
-            if ($scanBatchUrl->getScanBatchId() === $this) {
-                $scanBatchUrl->setScanBatchId(null);
+            if ($scanBatchUrl->getScanBatch() === $this) {
+                $scanBatchUrl->setScanBatch(null);
             }
         }
 

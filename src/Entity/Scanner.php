@@ -35,7 +35,7 @@ class Scanner
     private $dateTimeCreated;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="scannerId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="scanner", orphanRemoval=true)
      */
     private $propertyScanUrlLogs;
 
@@ -98,7 +98,7 @@ class Scanner
     {
         if (!$this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs[] = $propertyScanUrlLog;
-            $propertyScanUrlLog->setScannerId($this);
+            $propertyScanUrlLog->setScanner($this);
         }
 
         return $this;
@@ -109,8 +109,8 @@ class Scanner
         if ($this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs->removeElement($propertyScanUrlLog);
             // set the owning side to null (unless already changed)
-            if ($propertyScanUrlLog->getScannerId() === $this) {
-                $propertyScanUrlLog->setScannerId(null);
+            if ($propertyScanUrlLog->getScanner() === $this) {
+                $propertyScanUrlLog->setScanner(null);
             }
         }
 

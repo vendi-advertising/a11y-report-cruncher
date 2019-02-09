@@ -20,13 +20,13 @@ class PropertyScanUrlLog
      * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScanUrl", inversedBy="propertyScanUrlLogs")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $propertyScanUrlId;
+    private $propertyScanUrl;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Scanner", inversedBy="propertyScanUrlLogs")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $scannerId;
+    private $scanner;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\UrlLogEntryType")
@@ -50,26 +50,26 @@ class PropertyScanUrlLog
         return $this->id;
     }
 
-    public function getPropertyScanUrlId(): ?PropertyScanUrl
+    public function getPropertyScanUrl(): ?PropertyScanUrl
     {
-        return $this->propertyScanUrlId;
+        return $this->propertyScanUrl;
     }
 
-    public function setPropertyScanUrlId(?PropertyScanUrl $propertyScanUrlId): self
+    public function setPropertyScanUrl(?PropertyScanUrl $propertyScanUrl): self
     {
-        $this->propertyScanUrlId = $propertyScanUrlId;
+        $this->propertyScanUrl = $propertyScanUrl;
 
         return $this;
     }
 
-    public function getScannerId(): ?Scanner
+    public function getScanner(): ?Scanner
     {
-        return $this->scannerId;
+        return $this->scanner;
     }
 
-    public function setScannerId(?Scanner $scannerId): self
+    public function setScanner(?Scanner $scanner): self
     {
-        $this->scannerId = $scannerId;
+        $this->scanner = $scanner;
 
         return $this;
     }
