@@ -16,15 +16,11 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-class MakeUserCommand extends Command
+class MakeUserCommand extends AppCommandBase
 {
     protected static $defaultName = 'app:make:user';
 
     private $passwordEncoder;
-    private $entityManager;
-
-    private $input;
-    private $output;
 
     private const CLIENT_OPTION_ADD       = 'Add';
     private const CLIENT_OPTION_ERASE_ALL = 'Erase all';
@@ -35,9 +31,8 @@ class MakeUserCommand extends Command
 
     public function __construct(EntityManagerInterface $entityManager, UserPasswordEncoderInterface $passwordEncoder)
     {
-        parent::__construct();
+        parent::__construct($entityManager);
         $this->passwordEncoder = $passwordEncoder;
-        $this->entityManager = $entityManager;
     }
 
     protected function configure()
@@ -50,10 +45,6 @@ class MakeUserCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //We need these stored for the helpers
-        $this->input = $input;
-        $this->output = $output;
-
         $io = new SymfonyStyle($input, $output);
 
         //Allow this to come in on the actual command line
@@ -134,52 +125,6 @@ class MakeUserCommand extends Command
                     'D' => self::CLIENT_OPTION_DONE,
             ]
         ;
-    }
-
-    protected function get_user_by_email(string $email) : ?User
-    {
-        return $this
-                    ->entityManager
-                    ->getRepository(User::class)
-                    ->findOneBy(
-                        [
-                            'email' => $email,
-                        ]
-                    )
-        ;
-    }
-
-    protected function get_client_by_name(string $name) : ?Client
-    {
-        return $this
-                    ->entityManager
-                    ->getRepository(Client::class)
-                    ->findOneBy(
-                        [
-                            'name' => $name,
-                        ]
-                    )
-        ;
-    }
-
-    protected function get_all_client_names() : array
-    {
-        $clients =  $this
-                     ->entityManager
-                        ->getRepository(Client::class)
-                        ->findAll()
-        ;
-
-        $names = [];
-        array_walk(
-            $clients,
-            function (Client $client) use (&$names) {
-                $names[] = $client->getName();
-            }
-        )
-        ;
-
-        return $names;
     }
 
     protected function perform_email_change_question(User $user, bool $is_new_user) : bool
