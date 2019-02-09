@@ -32,7 +32,6 @@ class MakeClientCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-        $helper = $this->getHelper('question');
 
         $question = (new Question('What is the client\'s name? '))
             ->setNormalizer(
@@ -62,9 +61,7 @@ class MakeClientCommand extends Command
             )
         ;
 
-        $client_name = $helper->ask($input, $output, $question);
-
-
+        $client_name = $this->getHelper('question')->ask($input, $output, $question);
 
         $client = new Client();
         $client->setName($client_name);
