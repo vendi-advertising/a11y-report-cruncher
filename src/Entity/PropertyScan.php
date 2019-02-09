@@ -30,7 +30,7 @@ class PropertyScan
     private $dateTimeCreated;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrl", mappedBy="propertyScanId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrl", mappedBy="propertyScan", orphanRemoval=true)
      */
     private $propertyScanUrls;
 
@@ -81,7 +81,7 @@ class PropertyScan
     {
         if (!$this->propertyScanUrls->contains($propertyScanUrl)) {
             $this->propertyScanUrls[] = $propertyScanUrl;
-            $propertyScanUrl->setPropertyScanId($this);
+            $propertyScanUrl->setPropertyScan($this);
         }
 
         return $this;
@@ -92,8 +92,8 @@ class PropertyScan
         if ($this->propertyScanUrls->contains($propertyScanUrl)) {
             $this->propertyScanUrls->removeElement($propertyScanUrl);
             // set the owning side to null (unless already changed)
-            if ($propertyScanUrl->getPropertyScanId() === $this) {
-                $propertyScanUrl->setPropertyScanId(null);
+            if ($propertyScanUrl->getPropertyScan() === $this) {
+                $propertyScanUrl->setPropertyScan(null);
             }
         }
 

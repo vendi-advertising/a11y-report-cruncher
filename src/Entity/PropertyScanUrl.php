@@ -27,10 +27,10 @@ class PropertyScanUrl
      * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScan", inversedBy="propertyScanUrls")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $propertyScanId;
+    private $propertyScan;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="propertyScanUrlId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="propertyScanUrl", orphanRemoval=true)
      */
     private $propertyScanUrlLogs;
 
@@ -56,14 +56,14 @@ class PropertyScanUrl
         return $this;
     }
 
-    public function getPropertyScanId(): ?PropertyScan
+    public function getPropertyScan(): ?PropertyScan
     {
-        return $this->propertyScanId;
+        return $this->propertyScan;
     }
 
-    public function setPropertyScanId(?PropertyScan $propertyScanId): self
+    public function setPropertyScan(?PropertyScan $propertyScan): self
     {
-        $this->propertyScanId = $propertyScanId;
+        $this->propertyScan = $propertyScan;
 
         return $this;
     }
@@ -80,7 +80,7 @@ class PropertyScanUrl
     {
         if (!$this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs[] = $propertyScanUrlLog;
-            $propertyScanUrlLog->setPropertyScanUrlId($this);
+            $propertyScanUrlLog->setPropertyScanUrl($this);
         }
 
         return $this;
@@ -91,8 +91,8 @@ class PropertyScanUrl
         if ($this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
             $this->propertyScanUrlLogs->removeElement($propertyScanUrlLog);
             // set the owning side to null (unless already changed)
-            if ($propertyScanUrlLog->getPropertyScanUrlId() === $this) {
-                $propertyScanUrlLog->setPropertyScanUrlId(null);
+            if ($propertyScanUrlLog->getPropertyScanUrl() === $this) {
+                $propertyScanUrlLog->setPropertyScanUrl(null);
             }
         }
 

@@ -30,7 +30,7 @@ class Property
     private $client;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScan", mappedBy="propertyId", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScan", mappedBy="property", orphanRemoval=true)
      */
     private $propertyScans;
 
