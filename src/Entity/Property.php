@@ -39,6 +39,11 @@ class Property
      */
     private $dateTimeCreated;
 
+    /**
+     * @ORM\Column(type="string", length=1024)
+     */
+    private $name;
+
     public function __construct()
     {
         $this->propertyScans = new ArrayCollection();
@@ -113,6 +118,18 @@ class Property
     public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
     {
         $this->dateTimeCreated = $dateTimeCreated;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
