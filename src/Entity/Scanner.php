@@ -53,8 +53,8 @@ class Scanner implements UserInterface
     public static function get_entry_types() : array
     {
         return [
-            self::$TYPE_SPIDER,
-            self::$TYPE_REPORT,
+            self::TYPE_SPIDER,
+            self::TYPE_REPORT,
         ];
     }
 

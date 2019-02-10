@@ -47,8 +47,8 @@ class PropertyScanUrlLog
     public static function get_entry_directions() : array
     {
         return [
-            self::$DIRECTION_IN,
-            self::$DIRECTION_OUT,
+            self::DIRECTION_IN,
+            self::DIRECTION_OUT,
         ];
     }
 
