@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Property;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,11 +22,17 @@ class HomeController extends AbstractController
                         ->findAll()
         ;
 
+        $users = $entityManager
+                        ->getRepository(User::class)
+                        ->findAll()
+        ;
+
         return $this
                 ->render(
                     'home/index.html.twig',
                     [
                         'properties' => $properties,
+                        'users' => $users,
                     ]
                 );
     }

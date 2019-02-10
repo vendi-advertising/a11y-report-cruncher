@@ -3,10 +3,29 @@
 {% block title %}Home{% endblock %}
 
 {% block body %}
-<style>
 
-</style>
+<h1>Stuff</h1>
 
+<h2>Users with Clients</h2>
+<ul>
+    {% for user in users %}
+        <li>
+            {{ user.email }}
+
+            <ul>
+                {% for client in user.clients %}
+                    <li>
+                        {{client.name}}
+                    </li>
+                {% endfor %}
+            </ul>
+
+        </li>
+    {% endfor %}
+</ul>
+
+
+<h2>Properties with Scans</h2>
 <ul>
     {% for property in properties %}
         <li>
