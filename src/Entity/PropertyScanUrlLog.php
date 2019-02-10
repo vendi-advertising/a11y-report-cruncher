@@ -33,11 +33,6 @@ class PropertyScanUrlLog
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $entryType;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
     private $entryDirection;
 
     /**
@@ -54,14 +49,6 @@ class PropertyScanUrlLog
         return [
             self::$DIRECTION_IN,
             self::$DIRECTION_OUT,
-        ];
-    }
-
-    public static function get_entry_types() : array
-    {
-        return [
-            self::$TYPE_SPIDER,
-            self::$TYPE_REPORT,
         ];
     }
 
@@ -90,18 +77,6 @@ class PropertyScanUrlLog
     public function setScanner(?Scanner $scanner): self
     {
         $this->scanner = $scanner;
-
-        return $this;
-    }
-
-    public function getEntryType(): ?string
-    {
-        return $this->entryType;
-    }
-
-    public function setEntryType(?string $entryType): self
-    {
-        $this->entryType = $entryType;
 
         return $this;
     }
