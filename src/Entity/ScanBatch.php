@@ -43,8 +43,13 @@ class ScanBatch
 
     public function __construct()
     {
+        $now = new \DateTime();
+        $then = new \DateTime();
+        $then->modify('+5 minutes');
+
         $this->scanBatchUrls = new ArrayCollection();
-        $this->dateTimeCreated = new \DateTime();
+        $this->dateTimeCreated = $now;
+        $this->dateTimeExpires = $then;
     }
 
     public function getId(): ?int

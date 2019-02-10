@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\PropertyScanUrl;
+use App\Entity\PropertyScanUrlLog;
+use App\Entity\Scanner;
 use App\Entity\ScanBatch;
+use App\Entity\ScanBatchUrl;
 use App\RepositoryPropertyScanUrlRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +20,21 @@ class ApiBatchController extends AbstractController
     public function batch_get()
     {
 
+        $scanner = $this
+                    ->getDoctrine()
+                    ->getRepository(Scanner::class)
+                    ->findOneBy(
+                        [
+                            'scannerType' => Scanner::TYPE_SPIDER,
+                        ]
+                    )
+                ;
+
+        if(!$scanner){
+            throw new \Exception('No spider scanners registered');
+        }
+
+
         $urls = $this
                     ->getDoctrine()
                     ->getRepository(PropertyScanUrl::class)
@@ -27,7 +45,13 @@ class ApiBatchController extends AbstractController
         unset($urls);
 
         $batch = new ScanBatch();
-        $batch->addScanBatchUrls($subset);
+        $batch->setScanner($scanner);
+        foreach($subset as $url){
+
+            $sbu = new ScanBatchUrl();
+            $sbu->setPropertyScanUrl($url);
+            $batch->addScanBatchUrl($sbu);
+        }
 
         $data = [
             'urls' => []

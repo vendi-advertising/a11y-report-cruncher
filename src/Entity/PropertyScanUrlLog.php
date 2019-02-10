@@ -44,6 +44,10 @@ class PropertyScanUrlLog
 
     public const DIRECTION_OUT = 'check-out';
 
+    public const STATUS_SUCCESS = 'success';
+
+    public const STATUS_ERROR = 'error';
+
     public static function get_entry_directions() : array
     {
         return [

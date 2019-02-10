@@ -25,10 +25,10 @@ class ScanBatchUrl
     private $scanBatch;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\PropertyScanUrl")
+     * @ORM\OneToOne(targetEntity="App\Entity\PropertyScanUrlLog", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
      */
-    private $propertyScanUrl;
+    private $propertyScanUrlLog;
 
     public function getId(): ?int
     {
@@ -47,14 +47,14 @@ class ScanBatchUrl
         return $this;
     }
 
-    public function getPropertyScanUrl(): ?PropertyScanUrl
+    public function getPropertyScanUrlLog(): ?PropertyScanUrlLog
     {
-        return $this->propertyScanUrl;
+        return $this->propertyScanUrlLog;
     }
 
-    public function setPropertyScanUrl(?PropertyScanUrl $propertyScanUrl): self
+    public function setPropertyScanUrlLog(PropertyScanUrlLog $propertyScanUrlLog): self
     {
-        $this->propertyScanUrl = $propertyScanUrl;
+        $this->propertyScanUrlLog = $propertyScanUrlLog;
 
         return $this;
     }
