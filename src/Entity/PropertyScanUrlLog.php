@@ -31,14 +31,12 @@ class PropertyScanUrlLog
     private $scanner;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\UrlLogEntryType")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $entryType;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\UrlLogEntryDirection")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $entryDirection;
 
@@ -46,6 +44,30 @@ class PropertyScanUrlLog
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $status;
+
+    public const DIRECTION_IN = 'check-in';
+
+    public const DIRECTION_OUT = 'check-out';
+
+    public const TYPE_SPIDER = 'spider';
+
+    public const TYPE_REPORT = 'report';
+
+    public static function get_entry_directions() : array
+    {
+        return [
+            self::$DIRECTION_IN,
+            self::$DIRECTION_OUT,
+        ];
+    }
+
+    public static function get_entry_types() : array
+    {
+        return [
+            self::$TYPE_SPIDER,
+            self::$TYPE_REPORT,
+        ];
+    }
 
     public function getId(): ?int
     {
@@ -76,24 +98,24 @@ class PropertyScanUrlLog
         return $this;
     }
 
-    public function getEntryType(): ?UrlLogEntryType
+    public function getEntryType(): ?string
     {
         return $this->entryType;
     }
 
-    public function setEntryType(?UrlLogEntryType $entryType): self
+    public function setEntryType(?string $entryType): self
     {
         $this->entryType = $entryType;
 
         return $this;
     }
 
-    public function getEntryDirection(): ?UrlLogEntryDirection
+    public function getEntryDirection(): ?string
     {
         return $this->entryDirection;
     }
 
-    public function setEntryDirection(?UrlLogEntryDirection $entryDirection): self
+    public function setEntryDirection(?string $entryDirection): self
     {
         $this->entryDirection = $entryDirection;
 
