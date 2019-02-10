@@ -41,6 +41,11 @@ class Scanner
      */
     private $propertyScanUrlLogs;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $token;
+
     public function __construct()
     {
         $this->propertyScanUrlLogs = new ArrayCollection();
@@ -115,6 +120,18 @@ class Scanner
                 $propertyScanUrlLog->setScanner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
 
         return $this;
     }
