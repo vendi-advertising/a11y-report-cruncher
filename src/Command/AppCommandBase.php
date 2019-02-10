@@ -8,7 +8,6 @@ use App\Entity\Client;
 use App\Entity\Property;
 use App\Entity\PropertyScan;
 use App\Entity\Scanner;
-use App\Entity\ScannerType;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -70,16 +69,12 @@ abstract class AppCommandBase extends Command
 
     protected function get_all_scanner_types() : array
     {
-        return $this
-                ->entityManager
-                ->getRepository(ScannerType::class)
-                ->findAll()
-        ;
+        return Scanner::get_entry_types();
     }
 
     protected function get_all_scanner_type_names() : array
     {
-        return $this->get_all_names_of_things($this->get_all_scanner_types());
+        return $this->get_all_scanner_types();
     }
 
     protected function get_all_scanner_names() : array
@@ -87,17 +82,15 @@ abstract class AppCommandBase extends Command
         return $this->get_all_names_of_things($this->get_all_scanners());
     }
 
-    protected function get_scanner_type_by_name(string $name) : ?ScannerType
+    protected function get_scanner_type_by_name(string $name) : ?string
     {
-        return $this
-                    ->entityManager
-                    ->getRepository(ScannerType::class)
-                    ->findOneBy(
-                        [
-                            'name' => $name,
-                        ]
-                    )
-        ;
+        foreach($this->get_all_scanner_types() as $s){
+            if($s === $name){
+                return $name;
+            }
+        }
+
+        return null;
     }
 
     protected function get_all_scanners() : array

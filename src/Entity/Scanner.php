@@ -75,12 +75,12 @@ class Scanner implements UserInterface
         return $this->id;
     }
 
-    public function getScannerType(): ?ScannerType
+    public function getScannerType(): ?string
     {
         return $this->scannerType;
     }
 
-    public function setScannerType(?ScannerType $scannerType): self
+    public function setScannerType(?string $scannerType): self
     {
         $this->scannerType = $scannerType;
 
