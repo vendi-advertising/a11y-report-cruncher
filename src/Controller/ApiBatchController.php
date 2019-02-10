@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ApiBatchController extends AbstractController
 {
     /**
-     * @Route("/api/v1/batch", name="api_batch", defaults={"_format": "json"},)
+     * @Route("/api/v1/batch/request", name="api_batch", defaults={"_format": "json"},)
      */
     public function batch_get()
     {
