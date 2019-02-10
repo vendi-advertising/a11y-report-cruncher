@@ -22,8 +22,7 @@ class Scanner implements UserInterface
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ScannerType", inversedBy="scanners")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string", length=255)
      */
     private $scannerType;
 
@@ -46,6 +45,18 @@ class Scanner implements UserInterface
      * @ORM\Column(type="string", length=255)
      */
     private $token;
+
+    public const TYPE_SPIDER = 'spider';
+
+    public const TYPE_REPORT = 'report';
+
+    public static function get_entry_types() : array
+    {
+        return [
+            self::$TYPE_SPIDER,
+            self::$TYPE_REPORT,
+        ];
+    }
 
     public function __construct()
     {

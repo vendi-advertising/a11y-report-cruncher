@@ -49,10 +49,6 @@ class PropertyScanUrlLog
 
     public const DIRECTION_OUT = 'check-out';
 
-    public const TYPE_SPIDER = 'spider';
-
-    public const TYPE_REPORT = 'report';
-
     public static function get_entry_directions() : array
     {
         return [
