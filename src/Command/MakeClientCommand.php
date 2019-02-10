@@ -1,31 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Command;
 
 use App\Entity\Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class MakeClientCommand extends Command
+class MakeClientCommand extends AppCommandBase
 {
     protected static $defaultName = 'app:make:client';
-
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        parent::__construct();
-        $this->entityManager = $entityManager;
-    }
 
     protected function configure()
     {
         $this
             ->setDescription('Create a new client')
+            ->addArgument('client_name', InputArgument::OPTIONAL, 'Client\'s name')
         ;
     }
 
@@ -61,14 +57,14 @@ class MakeClientCommand extends Command
             )
         ;
 
-        $client_name = $this->getHelper('question')->ask($input, $output, $question);
+        $client_name = $this->get_arg_or_ask('client_name', $question);
+
 
         $client = new Client();
         $client->setName($client_name);
 
         $this->entityManager->persist($client);
         $this->entityManager->flush();
-
 
         $io->success("Successfully create new client {$client_name}");
     }
