@@ -3,6 +3,8 @@
 namespace App\Command;
 
 use App\Entity\Client;
+use App\Entity\Property;
+use App\Entity\PropertyScan;
 use App\Entity\Scanner;
 use App\Entity\ScannerType;
 use App\Entity\User;
@@ -29,6 +31,28 @@ abstract class AppCommandBase extends Command
     {
         parent::__construct();
         $this->entityManager = $entityManager;
+    }
+
+    protected function get_property_by_id(int $property_id) : ?Property
+    {
+        return $this
+                    ->entityManager
+                    ->getRepository(Property::class)
+                    ->find($property_id)
+        ;
+    }
+
+    protected function get_property_scan_by_id(int $id) : ?PropertyScan
+    {
+        return $this
+                    ->entityManager
+                    ->getRepository(ScannerType::class)
+                    ->findOneBy(
+                        [
+                            'id' => $id,
+                        ]
+                    )
+        ;
     }
 
     protected function get_all_names_of_things(array $things) : array
