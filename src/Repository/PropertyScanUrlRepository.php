@@ -19,6 +19,56 @@ class PropertyScanUrlRepository extends ServiceEntityRepository
         parent::__construct($registry, PropertyScanUrl::class);
     }
 
+    public function findAllNotNotSpidered() : array
+    {
+        $query = $this
+                    ->getEntityManager()
+                    ->createQuery('
+                        SELECT
+                            psu
+                        FROM
+                            App\Entity\PropertyScanUrl psu
+                        WHERE
+                            NOT EXISTS (
+
+                                SELECT
+                                    psul
+                                FROM
+                                    App\Entity\PropertyScanUrlLog psul
+                                JOIN
+                                    App\Entity\Scanner s
+                                WHERE
+                                    s.scannerType = \'spider\'
+                                AND
+                                    psul.propertyScanUrl = psu
+
+
+                            )
+                        '
+                    )
+        ;
+
+        return $query->execute();
+
+        // $sub = $this
+        //         ->createQueryBuilder()
+        //         ->select('PSUL')
+        //         ->from()
+        //         ->from("AnotherEntity","t");
+        // $sub->andWhere('t.user = j.id');
+
+        // $qb = $this
+        //         ->createQueryBuilder('psu')
+        //         ->andWhere('p.price > :price')
+        //         // ->setParameter('price', $price)
+        //         ->orderBy('p.price', 'ASC')
+        //         ->getQuery();
+
+        // dump($qb);
+
+        // return $qb->execute();
+    }
+
     // /**
     //  * @return PropertyScanUrl[] Returns an array of PropertyScanUrl objects
     //  */

@@ -2,6 +2,21 @@
 
 {% block title %}Home{% endblock %}
 
+{% block stylesheets %}
+<style>
+table,
+tr,
+td {
+    border: 1px solid #000;
+    border-collapse: collapse;;
+}
+
+td {
+    padding: 0.25rem;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 
 <h1>Stuff</h1>
@@ -47,6 +62,23 @@
                         <td>{{ scan.id }}</td>
                         <td>{{ scan.dateTimeCreated | date('m/d/Y') }}</td>
 
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <table>
+
+                            {% for url in scan.propertyScanUrls %}
+                                <tr>
+                                    <td>
+                                        {{ url.url }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            </table>
+
+                        </td>
                     </tr>
 
                 {% endfor %}
