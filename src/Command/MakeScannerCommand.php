@@ -1,16 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Client;
 use App\Entity\Scanner;
-use App\Entity\ScannerType;
-use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -34,9 +28,8 @@ class MakeScannerCommand extends AppCommandBase
         $question = (new Question('What is the name of the scanner?'))
                             ->setValidator(
                                 function ($value) {
-
-                                    foreach($this->get_all_scanners() as $t){
-                                        if( mb_strtolower($t->getName()) === mb_strtolower($value)){
+                                    foreach ($this->get_all_scanners() as $t) {
+                                        if (mb_strtolower($t->getName()) === mb_strtolower($value)) {
                                             throw new \RuntimeException('A scanner with that name already exists');
                                         }
                                     }
@@ -48,7 +41,7 @@ class MakeScannerCommand extends AppCommandBase
         $scanner_name = $this->get_arg_or_ask('scanner_name', $question);
 
 
-        $question = new ChoiceQuestion( 'What type of scanner is this?', $this->get_all_scanner_type_names());
+        $question = new ChoiceQuestion('What type of scanner is this?', $this->get_all_scanner_type_names());
         $scanner_type_name = $this->get_arg_or_ask('scanner_type', $question);
 
         $scanner_type = $this->get_scanner_type_by_name($scanner_type_name);

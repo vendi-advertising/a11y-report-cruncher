@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Client;
 use App\Demo\DemoCommand;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Console\Input\ArrayInput;
 
 class DemoInitCommand extends AppCommandBase
 {
@@ -43,26 +39,25 @@ class DemoInitCommand extends AppCommandBase
             )
         ;
 
-        if(!$io->confirm('Are you ready to being?')){
+        if (!$io->confirm('Are you ready to being?')) {
             $io->warning('Demp setup cancelled');
             exit;
         }
 
         $commands = [
-                new DemoCommand('app:make:client',          'Client'),
-                new DemoCommand('app:make:user',            'User'),
-                new DemoCommand('app:make:property',        'Proprty'),
-                new DemoCommand('app:make:property-scan',   'Property Scan'),
+                new DemoCommand('app:make:client', 'Client'),
+                new DemoCommand('app:make:user', 'User'),
+                new DemoCommand('app:make:property', 'Proprty'),
+                new DemoCommand('app:make:property-scan', 'Property Scan'),
         ];
 
         $io->progressStart(count($commands));
-        foreach($commands as $demo_command){
-
+        foreach ($commands as $demo_command) {
             $io->newLine();
 
             $io->section($demo_command->title);
 
-            if(!$io->confirm($demo_command->question)){
+            if (!$io->confirm($demo_command->question)) {
                 $io->text('Skipping');
                 $io->progressAdvance();
                 continue;

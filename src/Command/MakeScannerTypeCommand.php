@@ -1,17 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Client;
 use App\Entity\ScannerType;
-use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -32,9 +26,8 @@ class MakeScannerTypeCommand extends AppCommandBase
         $question = (new Question('What type of scanner is this?'))
                             ->setValidator(
                                 function ($value) {
-
-                                    foreach($this->get_all_scanner_types() as $t){
-                                        if( mb_strtolower($t->getName()) === mb_strtolower($value)){
+                                    foreach ($this->get_all_scanner_types() as $t) {
+                                        if (mb_strtolower($t->getName()) === mb_strtolower($value)) {
                                             throw new \RuntimeException('A scanner type with that name already exists');
                                         }
                                     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
@@ -10,17 +10,13 @@ use App\Entity\ScannerType;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AppCommandBase extends Command
 {
-
     protected $input;
 
     protected $output;
@@ -167,7 +163,7 @@ abstract class AppCommandBase extends Command
 
     protected function ask_question($question)
     {
-        if(is_string($question)){
+        if (is_string($question)) {
             $question = new Question($question);
         }
         return $this->getHelper('question')->ask($this->input, $this->output, $question);

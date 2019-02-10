@@ -2,11 +2,8 @@
 
 namespace App\Command;
 
-use App\Entity\Property;
 use App\Entity\PropertyScan;
 use App\Entity\PropertyScanUrl;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,23 +27,22 @@ class MakePropertyScanCommand extends AppCommandBase
         $property_id = $input->getArgument('property_id');
 
         $property = null;
-        if($property_id && is_numeric($property_id)){
+        if ($property_id && is_numeric($property_id)) {
             $property = $this->get_property_by_id((int) $property_id);
-            if(!$property){
+            if (!$property) {
                 $io->note('Supplied property id not found');
             }
         }
 
-        if(!$property){
+        if (!$property) {
             $question = (new Question('What is the Id of the property? '))
                             ->setValidator(
-                                function ($property_id) use(&$property){
-
-                                    if(!$property_id){
+                                function ($property_id) use (&$property) {
+                                    if (!$property_id) {
                                         return;
                                     }
 
-                                    if(!is_numeric($property_id)){
+                                    if (!is_numeric($property_id)) {
                                         throw new \RuntimeException('Please enter a number for the property Id');
                                     }
 
@@ -63,7 +59,7 @@ class MakePropertyScanCommand extends AppCommandBase
             ;
             $property_id = $this->ask_question($question);
 
-            if(!$property_id){
+            if (!$property_id) {
                 $io->note('Cancelled');
                 return;
             }

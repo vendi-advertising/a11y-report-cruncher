@@ -14,7 +14,7 @@ final class DemoCommand
 
     public function __construct(string $command_string, string $title, string $question = null)
     {
-        if(!$question){
+        if (!$question) {
             $question = sprintf('Would you like to create a new %1$s?', mb_strtolower($title));
         }
 
