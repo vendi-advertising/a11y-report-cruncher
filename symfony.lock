@@ -101,18 +101,6 @@
     "ocramius/proxy-manager": {
         "version": "2.2.2"
     },
-    "onurb/doctrine-metadata-grapher": {
-        "version": "1.1.11"
-    },
-    "onurb/doctrine-yuml-bundle": {
-        "version": "1.1",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "1.1",
-            "ref": "81130d6607195660087a01442f30be1edad71804"
-        }
-    },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
     },
@@ -268,9 +256,6 @@
     },
     "symfony/process": {
         "version": "v4.2.3"
-    },
-    "symfony/profiler-pack": {
-        "version": "v1.0.4"
     },
     "symfony/property-access": {
         "version": "v4.2.3"
