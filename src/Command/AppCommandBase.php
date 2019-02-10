@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Command;
 
@@ -12,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -167,6 +170,13 @@ abstract class AppCommandBase extends Command
             $question = new Question($question);
         }
         return $this->getHelper('question')->ask($this->input, $this->output, $question);
+    }
+
+    protected function ask_yes_or_no_question(string $question, bool $default_value) : bool
+    {
+        $y_or_n = $default_value ? '[Y/n] ' : '[y/N] ';
+        $question = new ConfirmationQuestion($question . ' ' . $y_or_n, $default_value);
+        return $this->ask_question($question);
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output)

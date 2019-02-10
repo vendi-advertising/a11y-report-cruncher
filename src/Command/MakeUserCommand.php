@@ -4,13 +4,11 @@ namespace App\Command;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -46,33 +44,28 @@ class MakeUserCommand extends AppCommandBase
     {
         $io = new SymfonyStyle($input, $output);
 
-        //Allow this to come in on the actual command line
-        $email = $input->getArgument('email');
-        if (!$email) {
+        //If we didn't pass one in, prompt here
+        $question = (new Question('What is the user\'s email address? '))
+                        //Trim extra whitespace
+                        ->setNormalizer(
+                            function ($value) {
+                                return $value ? trim($value) : '';
+                            }
+                        )
 
-            //If we didn't pass one in, prompt here
-            $question = (new Question('What is the user\'s email address? '))
-                            //Trim extra whitespace
-                            ->setNormalizer(
-                                function ($value) {
-                                    return $value ? trim($value) : '';
+                        //Force a valid email address
+                        ->setValidator(
+                            function ($email) {
+                                if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
+                                    throw new \RuntimeException('Please enter a valid email address');
                                 }
-                            )
 
-                            //Force a valid email address
-                            ->setValidator(
-                                function ($email) {
-                                    if (!is_string($email) || !filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-                                        throw new \RuntimeException('Please enter a valid email address');
-                                    }
+                                return $email;
+                            }
+                        )
+        ;
 
-                                    return $email;
-                                }
-                            )
-            ;
-
-            $email = $this->getHelper('question')->ask($input, $output, $question);
-        }
+        $email = $this->get_arg_or_ask('email', $question);
 
         //Try getting the current user
         $user = $this->get_user_by_email($email);
@@ -83,6 +76,8 @@ class MakeUserCommand extends AppCommandBase
             $user = new User();
             $user->setEmail($email);
             $is_dirty = true;
+        } else {
+            $io->note('Existing user found, switching to edit mode');
         }
 
         $methods = [
@@ -163,7 +158,7 @@ class MakeUserCommand extends AppCommandBase
                             )
             ;
 
-            $email = $this->getHelper('question')->ask($this->input, $this->output, $question);
+            $email = $this->ask_question($question);
             $user->setEmail($email);
 
             return true;
@@ -187,7 +182,7 @@ class MakeUserCommand extends AppCommandBase
         );
         $question->setMultiselect(true);
 
-        $user_roles = $this->getHelper('question')->ask($this->input, $this->output, $question);
+        $user_roles = $this->ask_question($question);
         $user_roles[] = User::get_required_role();
         $user->setRoles($user_roles);
 
@@ -260,7 +255,7 @@ class MakeUserCommand extends AppCommandBase
                         )
         ;
 
-        $client_name = $this->getHelper('question')->ask($this->input, $this->output, $question);
+        $client_name = $this->ask_question($question);
 
         if (!$client_name) {
             return;
@@ -332,7 +327,7 @@ class MakeUserCommand extends AppCommandBase
                             )
             ;
 
-            $what_to_do = $this->getHelper('question')->ask($this->input, $this->output, $question);
+            $what_to_do = $this->ask_question($question);
             switch ($what_to_do) {
                 case self::CLIENT_OPTION_ADD:
                     $this->do_client_action__add_or_remove($cloned_user, 'add');
@@ -388,7 +383,7 @@ class MakeUserCommand extends AppCommandBase
         $question->setHiddenFallback(false);
 
         //Ask it
-        $password = $this->getHelper('question')->ask($this->input, $this->output, $question);
+        $password = $this->ask_question($question);
 
         $user->setPassword(
             $this
@@ -400,12 +395,5 @@ class MakeUserCommand extends AppCommandBase
         );
 
         return true;
-    }
-
-    protected function ask_yes_or_no_question(string $question, bool $default_value) : bool
-    {
-        $y_or_n = $default_value ? '[Y/n] ' : '[y/N] ';
-        $question = new ConfirmationQuestion($question . ' ' . $y_or_n, $default_value);
-        return $this->getHelper('question')->ask($this->input, $this->output, $question);
     }
 }
