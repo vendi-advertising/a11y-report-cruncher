@@ -37,11 +37,6 @@ class Scanner implements UserInterface
     private $dateTimeCreated;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScanUrlLog", mappedBy="scanner", orphanRemoval=true)
-     */
-    private $propertyScanUrlLogs;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $token;
@@ -60,7 +55,6 @@ class Scanner implements UserInterface
 
     public function __construct()
     {
-        $this->propertyScanUrlLogs = new ArrayCollection();
         $this->dateTimeCreated = new \DateTime();
         $this->token = $this->generate_random_string();
     }
@@ -107,37 +101,6 @@ class Scanner implements UserInterface
     public function setDateTimeCreated(\DateTimeInterface $dateTimeCreated): self
     {
         $this->dateTimeCreated = $dateTimeCreated;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|PropertyScanUrlLog[]
-     */
-    public function getPropertyScanUrlLogs(): Collection
-    {
-        return $this->propertyScanUrlLogs;
-    }
-
-    public function addPropertyScanUrlLog(PropertyScanUrlLog $propertyScanUrlLog): self
-    {
-        if (!$this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
-            $this->propertyScanUrlLogs[] = $propertyScanUrlLog;
-            $propertyScanUrlLog->setScanner($this);
-        }
-
-        return $this;
-    }
-
-    public function removePropertyScanUrlLog(PropertyScanUrlLog $propertyScanUrlLog): self
-    {
-        if ($this->propertyScanUrlLogs->contains($propertyScanUrlLog)) {
-            $this->propertyScanUrlLogs->removeElement($propertyScanUrlLog);
-            // set the owning side to null (unless already changed)
-            if ($propertyScanUrlLog->getScanner() === $this) {
-                $propertyScanUrlLog->setScanner(null);
-            }
-        }
 
         return $this;
     }

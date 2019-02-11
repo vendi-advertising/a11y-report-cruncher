@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Client;
 use App\Entity\Property;
+use App\Entity\PropertyUrl;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -154,6 +155,12 @@ class MakePropertyCommand extends Command
         $property->setClient($client);
 
         $this->entityManager->persist($property);
+
+        $propertyUrl = new PropertyUrl();
+        $propertyUrl->setProperty($property);
+        $propertyUrl->setUrl($url);
+        $this->entityManager->persist($propertyUrl);
+
         $this->entityManager->flush();
 
         $io = new SymfonyStyle($input, $output);

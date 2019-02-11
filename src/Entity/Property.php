@@ -32,11 +32,6 @@ class Property
     private $client;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyScan", mappedBy="property", orphanRemoval=true)
-     */
-    private $propertyScans;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $dateTimeCreated;
@@ -46,10 +41,15 @@ class Property
      */
     private $name;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PropertyUrl", mappedBy="property", orphanRemoval=true)
+     */
+    private $propertyUrls;
+
     public function __construct()
     {
-        $this->propertyScans = new ArrayCollection();
         $this->dateTimeCreated = new \DateTime();
+        $this->propertyUrls = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,37 +81,6 @@ class Property
         return $this;
     }
 
-    /**
-     * @return Collection|PropertyScan[]
-     */
-    public function getPropertyScans(): Collection
-    {
-        return $this->propertyScans;
-    }
-
-    public function addPropertyScan(PropertyScan $propertyScan): self
-    {
-        if (!$this->propertyScans->contains($propertyScan)) {
-            $this->propertyScans[] = $propertyScan;
-            $propertyScan->setProperty($this);
-        }
-
-        return $this;
-    }
-
-    public function removePropertyScan(PropertyScan $propertyScan): self
-    {
-        if ($this->propertyScans->contains($propertyScan)) {
-            $this->propertyScans->removeElement($propertyScan);
-            // set the owning side to null (unless already changed)
-            if ($propertyScan->getProperty() === $this) {
-                $propertyScan->setProperty(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getDateTimeCreated(): ?\DateTimeInterface
     {
         return $this->dateTimeCreated;
@@ -132,6 +101,37 @@ class Property
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PropertyUrl[]
+     */
+    public function getPropertyUrls(): Collection
+    {
+        return $this->propertyUrls;
+    }
+
+    public function addPropertyUrl(PropertyUrl $propertyUrl): self
+    {
+        if (!$this->propertyUrls->contains($propertyUrl)) {
+            $this->propertyUrls[] = $propertyUrl;
+            $propertyUrl->setProperty($this);
+        }
+
+        return $this;
+    }
+
+    public function removePropertyUrl(PropertyUrl $propertyUrl): self
+    {
+        if ($this->propertyUrls->contains($propertyUrl)) {
+            $this->propertyUrls->removeElement($propertyUrl);
+            // set the owning side to null (unless already changed)
+            if ($propertyUrl->getProperty() === $this) {
+                $propertyUrl->setProperty(null);
+            }
+        }
 
         return $this;
     }
