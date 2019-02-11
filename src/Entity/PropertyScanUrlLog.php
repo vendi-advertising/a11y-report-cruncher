@@ -40,6 +40,16 @@ class PropertyScanUrlLog
      */
     private $status;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $contentType;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $info;
+
     public const DIRECTION_IN = 'check-in';
 
     public const DIRECTION_OUT = 'check-out';
@@ -125,6 +135,30 @@ class PropertyScanUrlLog
     public function setStatus(?string $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getContentType(): ?string
+    {
+        return $this->contentType;
+    }
+
+    public function setContentType(?string $contentType): self
+    {
+        $this->contentType = $contentType;
+
+        return $this;
+    }
+
+    public function getInfo(): ?string
+    {
+        return $this->info;
+    }
+
+    public function setInfo(?string $info): self
+    {
+        $this->info = $info;
 
         return $this;
     }

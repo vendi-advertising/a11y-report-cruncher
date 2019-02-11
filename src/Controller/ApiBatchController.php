@@ -43,7 +43,8 @@ class ApiBatchController extends AbstractController
         unset($urls);
 
         $data = [
-            'urls' => []
+            'urls' => [
+            ]
         ];
 
         foreach($subset as $url){
@@ -56,7 +57,23 @@ class ApiBatchController extends AbstractController
 
             $entityManager->persist($log);
 
-            $data['urls'][] = $url->getUrl();
+            //This is temporary, but works
+            $data['urls'][] = new class($url) implements \JsonSerializable {
+
+                private $url;
+
+                public function __construct($url) {
+                    $this->url = $url;
+                }
+
+                public function jsonSerialize()
+                {
+                    return [
+                        'url'               => $this->url->getUrl(),
+                        'propertyScanUrlId' => $this->url->getId(),
+                    ];
+                }
+            };
         }
 
         $entityManager->flush();
