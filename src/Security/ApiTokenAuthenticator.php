@@ -31,7 +31,7 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('X-AUTH-TOKEN');
+        return $request->headers->has('X-AUTH-TOKEN') || $request->query->has('X-AUTH-TOKEN');
     }
 
     /**
@@ -41,7 +41,7 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'token' => $request->headers->get('X-AUTH-TOKEN'),
+            'token' => $request->headers->get('X-AUTH-TOKEN') ?? $request->query->get('X-AUTH-TOKEN')
         ];
     }
 

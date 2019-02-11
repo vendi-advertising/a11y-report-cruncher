@@ -15,11 +15,12 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        # api:
-        #     pattern: ^/api/
-        #     guard:
-        #         authenticators:
-        #             - App\Security\ApiTokenAuthenticator
+        api:
+            pattern: ^/api/
+            stateless: true
+            guard:
+                authenticators:
+                    - App\Security\ApiTokenAuthenticator
 
         main:
             anonymous: true
@@ -40,5 +41,5 @@ security:
     access_control:
         - { path: ^/home,  roles: ROLE_GLOBAL_ADMIN }
         - { path: ^/admin, roles: ROLE_GLOBAL_ADMIN }
-        # - { path: ^/api,   roles: [ROLE_GLOBAL_ADMIN, ROLE_API]  }
+        - { path: ^/api,   roles: [ROLE_GLOBAL_ADMIN, ROLE_API]  }
         # - { path: ^/profile, roles: ROLE_USER }
