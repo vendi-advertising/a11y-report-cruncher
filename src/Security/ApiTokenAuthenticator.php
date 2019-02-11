@@ -80,9 +80,6 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_FORBIDDEN);
@@ -95,7 +92,7 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             // you might translate this message
-            'message' => 'Authentication Required'
+            'message' => 'Authentication Required',
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
