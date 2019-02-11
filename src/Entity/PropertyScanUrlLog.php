@@ -56,6 +56,26 @@ class PropertyScanUrlLog
         ];
     }
 
+    public function setStatusSuccess() : self
+    {
+        return $this->setStatus(self::STATUS_SUCCESS);
+    }
+
+    public function setStatusError() : self
+    {
+        return $this->setStatus(self::STATUS_ERROR);
+    }
+
+    public function setDirectionIn() : self
+    {
+        return $this->setEntryDirection(self::DIRECTION_IN);
+    }
+
+    public function setDirectionOut() : self
+    {
+        return $this->setEntryDirection(self::DIRECTION_OUT);
+    }
+
     public function getId(): ?int
     {
         return $this->id;
