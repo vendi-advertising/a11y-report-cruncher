@@ -6,7 +6,6 @@ namespace App\Command;
 
 use App\Entity\Client;
 use App\Entity\Property;
-use App\Entity\PropertyScan;
 use App\Entity\Scanner;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,19 +39,6 @@ abstract class AppCommandBase extends Command
         ;
     }
 
-    protected function get_property_scan_by_id(int $id) : ?PropertyScan
-    {
-        return $this
-                    ->entityManager
-                    ->getRepository(ScannerType::class)
-                    ->findOneBy(
-                        [
-                            'id' => $id,
-                        ]
-                    )
-        ;
-    }
-
     protected function get_all_names_of_things(array $things) : array
     {
         $names = [];
@@ -65,6 +51,11 @@ abstract class AppCommandBase extends Command
         ;
 
         return $names;
+    }
+
+    protected function get_all_property_names() : array
+    {
+        return $this->get_all_names_of_things($this->get_all_properties());
     }
 
     protected function get_all_scanner_types() : array
@@ -93,50 +84,70 @@ abstract class AppCommandBase extends Command
         return null;
     }
 
+    protected function get_all_properties() : array
+    {
+        return $this->get_all_SOMETHING(Property::class);
+    }
+
+    protected function get_all_clients() : array
+    {
+        return $this->get_all_SOMETHING(Client::class);
+    }
+
     protected function get_all_scanners() : array
     {
-        return $this
-                ->entityManager
-                ->getRepository(Scanner::class)
-                ->findAll()
-        ;
+        return $this->get_all_SOMETHING(Scanner::class);
+    }
+
+    protected function get_property_by_name(string $property_name) : ?Property
+    {
+        //This is flawed because it is not unique
+        return $this->get_SOMETHING_by_name($property_name, Property::class);
     }
 
     protected function get_user_by_email(string $email) : ?User
     {
-        return $this
-                    ->entityManager
-                    ->getRepository(User::class)
-                    ->findOneBy(
-                        [
-                            'email' => $email,
-                        ]
-                    )
-        ;
+        return $this->get_SOMETHING_by_SOMETHING_ELSE($email, 'email', User::class);
     }
 
     protected function get_client_by_name(string $name) : ?Client
     {
+        return $this->get_SOMETHING_by_name($name, Client::class);
+    }
+
+    protected function get_all_client_names() : array
+    {
+        $clients =  $this->get_all_clients();
+
+        return $this->get_all_names_of_things($clients);
+    }
+
+    protected function get_SOMETHING_by_name(string $name, string $repository)
+    {
+        return $this->get_SOMETHING_by_SOMETHING_ELSE($name, 'name', $repository);
+        ;
+    }
+
+    protected function get_SOMETHING_by_SOMETHING_ELSE(string $value, string $property, string $repository)
+    {
         return $this
                     ->entityManager
-                    ->getRepository(Client::class)
+                    ->getRepository($repository)
                     ->findOneBy(
                         [
-                            'name' => $name,
+                            $property => $value,
                         ]
                     )
         ;
     }
 
-    protected function get_all_client_names() : array
+    protected function get_all_SOMETHING(string $repository) : array
     {
-        $clients =  $this
-                     ->entityManager
-                        ->getRepository(Client::class)
-                        ->findAll()
+        return $this
+                ->entityManager
+                ->getRepository($repository)
+                ->findAll()
         ;
-
-        return $this->get_all_names_of_things($clients);
     }
 
     protected function get_arg_or_ask(string $arg_name, $question)
