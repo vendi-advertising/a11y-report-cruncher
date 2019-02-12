@@ -39,15 +39,21 @@ class Scanner implements UserInterface
      */
     private $token;
 
-    public const TYPE_SPIDER = 'spider';
+    public const TYPE_CRAWLER = 'crawler';
 
-    public const TYPE_REPORT = 'report';
+    public const TYPE_A11Y = 'accessibility';
+
+    public const TYPE_SEO = 'seo';
+
+    public const TYPE_SCREEN_SHOT = 'screen-shot';
 
     public static function get_entry_types() : array
     {
         return [
-            self::TYPE_SPIDER,
-            self::TYPE_REPORT,
+            self::TYPE_CRAWLER,
+            self::TYPE_A11Y,
+            self::TYPE_SEO,
+            self::TYPE_SCREEN_SHOT,
         ];
     }
 

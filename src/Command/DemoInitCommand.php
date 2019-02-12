@@ -48,6 +48,7 @@ class DemoInitCommand extends AppCommandBase
                 new DemoCommand('app:make:client', 'Client'),
                 new DemoCommand('app:make:user', 'User'),
                 new DemoCommand('app:make:property', 'Proprty'),
+                new DemoCommand('app:make:scanner', 'Scanner'),
         ];
 
         $io->progressStart(count($commands));

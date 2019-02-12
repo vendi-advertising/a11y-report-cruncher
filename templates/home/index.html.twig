@@ -45,46 +45,6 @@ td {
     {% for property in properties %}
         <li>
             {{ property.name }}
-
-            <table>
-                <thead>
-                    <tr>
-                        <td>Scan ID</td>
-                        <td>Date/Time Created</td>
-                    </tr>
-                </thead>
-                <tbody>
-
-                {% for scan in property.propertyScans %}
-
-                    <tr>
-
-                        <td>{{ scan.id }}</td>
-                        <td>{{ scan.dateTimeCreated | date('m/d/Y') }}</td>
-
-                    </tr>
-
-                    <tr>
-                        <td colspan="2">
-                            <table>
-
-                            {% for url in scan.propertyScanUrls %}
-                                <tr>
-                                    <td>
-                                        {{ url.url }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-
-                            </table>
-
-                        </td>
-                    </tr>
-
-                {% endfor %}
-                </tbody>
-            </table>
-
         </li>
     {% endfor %}
 </ul>

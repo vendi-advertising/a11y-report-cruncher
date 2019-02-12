@@ -156,11 +156,6 @@ class MakePropertyCommand extends Command
 
         $this->entityManager->persist($property);
 
-        $propertyUrl = new PropertyUrl();
-        $propertyUrl->setProperty($property);
-        $propertyUrl->setUrl($url);
-        $this->entityManager->persist($propertyUrl);
-
         $this->entityManager->flush();
 
         $io = new SymfonyStyle($input, $output);

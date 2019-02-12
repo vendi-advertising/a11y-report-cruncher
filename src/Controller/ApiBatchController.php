@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\PropertyScanUrl;
-use App\Entity\PropertyScanUrlLog;
 use App\Entity\Scanner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -88,7 +86,7 @@ class ApiBatchController extends AbstractController
                     ->getRepository(Scanner::class)
                     ->findOneBy(
                         [
-                            'scannerType' => Scanner::TYPE_SPIDER,
+                            'scannerType' => Scanner::TYPE_CRAWLER,
                         ]
                     )
                 ;

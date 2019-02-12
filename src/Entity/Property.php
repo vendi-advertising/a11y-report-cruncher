@@ -42,14 +42,14 @@ class Property
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PropertyUrl", mappedBy="property", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Scan", mappedBy="property", orphanRemoval=true)
      */
-    private $propertyUrls;
+    private $scans;
 
     public function __construct()
     {
         $this->dateTimeCreated = new \DateTime();
-        $this->propertyUrls = new ArrayCollection();
+        $this->scans = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -106,30 +106,30 @@ class Property
     }
 
     /**
-     * @return Collection|PropertyUrl[]
+     * @return Collection|Scan[]
      */
-    public function getPropertyUrls(): Collection
+    public function getScans(): Collection
     {
-        return $this->propertyUrls;
+        return $this->scans;
     }
 
-    public function addPropertyUrl(PropertyUrl $propertyUrl): self
+    public function addScan(Scan $scan): self
     {
-        if (!$this->propertyUrls->contains($propertyUrl)) {
-            $this->propertyUrls[] = $propertyUrl;
-            $propertyUrl->setProperty($this);
+        if (!$this->scans->contains($scan)) {
+            $this->scans[] = $scan;
+            $scan->setProperty($this);
         }
 
         return $this;
     }
 
-    public function removePropertyUrl(PropertyUrl $propertyUrl): self
+    public function removeScan(Scan $scan): self
     {
-        if ($this->propertyUrls->contains($propertyUrl)) {
-            $this->propertyUrls->removeElement($propertyUrl);
+        if ($this->scans->contains($scan)) {
+            $this->scans->removeElement($scan);
             // set the owning side to null (unless already changed)
-            if ($propertyUrl->getProperty() === $this) {
-                $propertyUrl->setProperty(null);
+            if ($scan->getProperty() === $this) {
+                $scan->setProperty(null);
             }
         }
 

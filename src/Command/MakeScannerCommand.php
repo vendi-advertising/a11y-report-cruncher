@@ -60,7 +60,9 @@ class MakeScannerCommand extends AppCommandBase
         $this->entityManager->persist($scanner);
         $this->entityManager->flush();
 
+        $token = $scanner->getToken();
+
         $io = new SymfonyStyle($input, $output);
-        $io->success("Scanner {$scanner_name} created");
+        $io->success("Scanner {$scanner_name} created with token {$token}");
     }
 }
