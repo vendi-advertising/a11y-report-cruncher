@@ -1,11 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Controller;
 
 use App\Entity\PropertyScanUrl;
 use App\Entity\PropertyScanUrlLog;
 use App\Entity\Scanner;
-use App\RepositoryPropertyScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,23 +22,22 @@ class ApiBatchController extends AbstractController
         $body = $request->getContent();
         $body = '[{"url":"https://vendiadvertising.com/","contentType":"text/html; charset=UTF-8","statusCode":200,"error":null,"propertyScanUrlId":1,"subUrlRequestStatus":{"error":null,"urls":["https://vendiadvertising.com/what","https://vendiadvertising.com/work","https://vendiadvertising.com/who","https://vendiadvertising.com/insight","https://vendiadvertising.com/vendi-share","https://vendiadvertising.com/contact","https://vendiadvertising.com","https://vendiadvertising.com/portfolio-item/wiscontext","https://vendiadvertising.com/what/brand","https://vendiadvertising.com/what/design","https://vendiadvertising.com/what/digital","https://vendiadvertising.com/what/marketing","https://vendiadvertising.com/what/media","https://vendiadvertising.com/what/research","https://vendiadvertising.com/what/strategy","https://vendiadvertising.com/what/video-photography","https://vendiadvertising.com/what/web-mobile","https://vendiadvertising.com/reel","https://vendiadvertising.com/national-awards","https://vendiadvertising.com/careers","https://vendiadvertising.com/vendi-launch","https://vendiadvertising.com/work/consumer-goods","https://vendiadvertising.com/work/education","https://vendiadvertising.com/work/financial-insurance","https://vendiadvertising.com/work/healthcare","https://vendiadvertising.com/work/manufacturing"]}}]';
         $parsed = json_decode($body);
-        if(!is_array($parsed)){
+        if (!is_array($parsed)) {
             throw new \Exception('Non array');
         }
 
-        if(0 === count($parsed)){
+        if (0 === count($parsed)) {
             throw new \Exception('Empty array');
         }
 
         $scanner = $tokenStorage->getToken()->getUser();
 
 
-        foreach($parsed as $obj){
-
+        foreach ($parsed as $obj) {
             $propertyScanUrl = $this
                                 ->getDoctrine()
                                 ->getRepository(PropertyScanUrl::class)
-                                ->find((int)$obj->propertyScanUrlId)
+                                ->find((int) $obj->propertyScanUrlId)
                             ;
 
 
@@ -50,27 +48,26 @@ class ApiBatchController extends AbstractController
                     ->setContentType($obj->contentType)
             ;
 
-            if(!$obj->error){
+            if (!$obj->error) {
                 $log->setStatusSuccess();
-            }else{
+            } else {
                 $log->setStatusError();
                 $log->setInfo($obj->error);
             }
 
             $entityManager->persist($log);
-/*
-        "url": "https://vendiadvertising.com/",
-        "contentType": "text/html; charset=UTF-8",
-        "statusCode": 200,
-        "error": null,
-        "propertyScanUrlId": 1,
-        "subUrlRequestStatus": {
-            "error": null,
-            "urls": [
-            ]
-        }
- */
-
+            /*
+                    "url": "https://vendiadvertising.com/",
+                    "contentType": "text/html; charset=UTF-8",
+                    "statusCode": 200,
+                    "error": null,
+                    "propertyScanUrlId": 1,
+                    "subUrlRequestStatus": {
+                        "error": null,
+                        "urls": [
+                        ]
+                    }
+             */
         }
 
         $entityManager->flush();
@@ -86,7 +83,6 @@ class ApiBatchController extends AbstractController
      */
     public function request_urls_for_spider(EntityManagerInterface $entityManager)
     {
-
         $scanner = $this
                     ->getDoctrine()
                     ->getRepository(Scanner::class)
@@ -97,7 +93,7 @@ class ApiBatchController extends AbstractController
                     )
                 ;
 
-        if(!$scanner){
+        if (!$scanner) {
             throw new \Exception('No spider scanners registered');
         }
 
@@ -115,7 +111,7 @@ class ApiBatchController extends AbstractController
             ]
         ];
 
-        foreach($subset as $url){
+        foreach ($subset as $url) {
             $log = (new PropertyScanUrlLog())
                     ->setDirectionOut()
                     ->setStatusSuccess()
@@ -127,10 +123,10 @@ class ApiBatchController extends AbstractController
 
             //This is temporary, but works
             $data['urls'][] = new class($url) implements \JsonSerializable {
-
                 private $url;
 
-                public function __construct($url) {
+                public function __construct($url)
+                {
                     $this->url = $url;
                 }
 

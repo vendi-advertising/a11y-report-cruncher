@@ -84,8 +84,8 @@ abstract class AppCommandBase extends Command
 
     protected function get_scanner_type_by_name(string $name) : ?string
     {
-        foreach($this->get_all_scanner_types() as $s){
-            if($s === $name){
+        foreach ($this->get_all_scanner_types() as $s) {
+            if ($s === $name) {
                 return $name;
             }
         }
