@@ -30,10 +30,6 @@ class MakePropertyCommand extends AppCommandBase
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //We need these stored for the helpers
-        $this->input = $input;
-        $this->output = $output;
-
         //Allow this to come in on the actual command line
         $name = $input->getArgument('name');
         $url = $input->getArgument('url');
