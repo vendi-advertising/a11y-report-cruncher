@@ -15,20 +15,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class MakePropertyCommand extends Command
+class MakePropertyCommand extends AppCommandBase
 {
     protected static $defaultName = 'app:make:property';
-
-    private $entityManager;
-
-    private $input;
-    private $output;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        parent::__construct();
-        $this->entityManager = $entityManager;
-    }
 
     protected function configure()
     {
@@ -37,39 +26,6 @@ class MakePropertyCommand extends Command
             ->addArgument('name', InputArgument::OPTIONAL, 'Property name')
             ->addArgument('url', InputArgument::OPTIONAL, 'Root Url (please don\'t use sub folders')
         ;
-    }
-
-    protected function get_client_by_name(string $name) : ?Client
-    {
-        return $this
-                    ->entityManager
-                    ->getRepository(Client::class)
-                    ->findOneBy(
-                        [
-                            'name' => $name,
-                        ]
-                    )
-        ;
-    }
-
-    protected function get_all_client_names() : array
-    {
-        $clients =  $this
-                     ->entityManager
-                        ->getRepository(Client::class)
-                        ->findAll()
-        ;
-
-        $names = [];
-        array_walk(
-            $clients,
-            function (Client $client) use (&$names) {
-                $names[] = $client->getName();
-            }
-        )
-        ;
-
-        return $names;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
