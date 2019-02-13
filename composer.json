@@ -1,6 +1,13 @@
 {
+    "name": "vendi-advertising/a11y-report-cruncher",
+    "authors": [
+        {
+            "name": "Chris Haas",
+            "email": "chris@vendiadvertising.com"
+        }
+    ],
     "type": "project",
-    "license": "proprietary",
+    "license": "mit",
     "require": {
         "php": "^7.2",
         "ext-ctype": "*",

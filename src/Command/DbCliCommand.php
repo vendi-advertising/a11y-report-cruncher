@@ -43,7 +43,11 @@ class DbCliCommand extends Command
         putenv('MYSQL_PWD=' . $password);
 
         //Our command
-        $cmd = sprintf('/usr/bin/env mysql --user=%1$s --database=%2$s --host=%3$s', $username, $database, $host);
+        $cmd = sprintf('mysql --user=%1$s --database=%2$s --host=%3$s', $username, $database, $host);
+
+        if(PHP_OS !== 'WINNT'){
+            $cmd = '/usr/bin/env ' . $cmd;
+        }
 
         //Proc/pips
         $descriptors = [ STDIN, STDOUT, STDERR ];
