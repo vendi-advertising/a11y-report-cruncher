@@ -21,7 +21,8 @@
         "symfony/orm-pack": "^1.0",
         "symfony/security-bundle": "4.2.*",
         "symfony/web-profiler-bundle": "4.2.*",
-        "symfony/yaml": "4.2.*"
+        "symfony/yaml": "4.2.*",
+        "webmozart/path-util": "^2.3"
     },
     "config": {
         "preferred-install": {
