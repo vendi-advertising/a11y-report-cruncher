@@ -153,23 +153,14 @@ class ApiBatchController extends AbstractController
             );
         }
 
-        $urls = $scanUrlRepository
-                    ->findBy(
-                        [
-                            'scanStatus' => ScanUrl::SCAN_STATUS_READY,
-                        ]
-                    )
-                ;
-
-        $subset = array_slice($urls, 0, 15);
-        unset($urls);
+        $urls = $scanUrlRepository->findAllUrlsReadyToScan(15);
 
         $data = [
             'urls' => [
             ]
         ];
 
-        foreach ($subset as $url) {
+        foreach ($urls as $url) {
             $data['urls'][] = [
                 'url' => $url->getUrl(),
                 'scanUrlId' => $url->getId(),

@@ -19,6 +19,19 @@ class ScanUrlRepository extends ServiceEntityRepository
         parent::__construct($registry, ScanUrl::class);
     }
 
+    public function findAllUrlsReadyToScan(int $limit = 20) : array
+    {
+        return $this
+                    ->findBy(
+                        [
+                            'scanStatus' => ScanUrl::SCAN_STATUS_READY,
+                        ],
+                        null,
+                        $limit
+                    )
+                ;
+    }
+
     // /**
     //  * @return ScanUrl[] Returns an array of ScanUrl objects
     //  */
