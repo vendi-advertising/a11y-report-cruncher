@@ -91,6 +91,7 @@ class ApiBatchController extends AbstractController
                     )
                 ;
 
+
         if (!$scanner) {
             throw new \Exception('No spider scanners registered');
         }
