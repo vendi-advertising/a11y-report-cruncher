@@ -45,6 +45,43 @@ td {
     {% for property in properties %}
         <li>
             {{ property.name }}
+
+            <ul>
+            {% for scan in property.scans %}
+                <li>
+                    {{ scan.scanType }}
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <td>Id</td>
+                                <td>Url</td>
+                                <td>Scan Status</td>
+                                <td>Content Type</td>
+                                <td>Byte Size</td>
+                                <td>Http Status</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                    {% for url in scan.scanUrls %}
+
+                            <tr>
+                                <td>{{ url.id }}</td>
+                                <td>{{ url.url }}</td>
+                                <td>{{ url.scanStatus }}</td>
+                                <td>{{ url.contentType }}</td>
+                                <td>{{ url.byteSize }}</td>
+                                <td>{{ url.httpStatus }}</td>
+                            </tr>
+
+                    {% endfor %}
+
+                        </tbody>
+                    </table>
+                </li>
+            {% endfor %}
+            </ul>
         </li>
     {% endfor %}
 </ul>
