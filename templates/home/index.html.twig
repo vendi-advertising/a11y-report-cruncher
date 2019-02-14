@@ -39,6 +39,29 @@ td {
     {% endfor %}
 </ul>
 
+<h2>Scanners</h2>
+<table>
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Type</td>
+            <td>Name</td>
+            <td>Token</td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for scanner in scanners %}
+
+        <tr>
+            <td>{{ scanner.id }}</td>
+            <td>{{ scanner.scannerType }}</td>
+            <td>{{ scanner.name }}</td>
+            <td>{{ scanner.token }}</td>
+        </tr>
+
+    {% endfor %}
+    </tbody>
+</table>
 
 <h2>Properties with Scans</h2>
 <ul>
