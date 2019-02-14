@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Scan;
 use App\Entity\Scanner;
+use App\Entity\ScanUrl;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -69,20 +70,15 @@ class MakeScanCommand extends AppCommandBase
         $scan = new Scan();
         $scan->setProperty($property);
         $scan->setScanType(Scanner::TYPE_CRAWLER);
-
         $this->entityManager->persist($scan);
+
+        $scanUrl = new ScanUrl();
+        $scanUrl->setUrl($scan->getProperty()->getRootUrl());
+        $scanUrl->setScan($scan);
+        $this->entityManager->persist($scanUrl);
+
         $this->entityManager->flush();
 
-        // $io = new SymfonyStyle($input, $output);
-        // $arg1 = $input->getArgument('arg1');
-
-        // if ($arg1) {
-        //     $io->note(sprintf('You passed an argument: %s', $arg1));
-        // }
-
-        // if ($input->getOption('option1')) {
-        //     // ...
-        // }
 
         // $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
     }
