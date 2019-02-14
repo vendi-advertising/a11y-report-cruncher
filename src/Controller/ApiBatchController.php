@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Scanner;
+use App\Entity\ScanUrl;
+use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -79,27 +81,20 @@ class ApiBatchController extends AbstractController
     /**
      * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
-    public function request_urls_for_spider(EntityManagerInterface $entityManager)
-    {
-        $scanner = $this
-                    ->getDoctrine()
-                    ->getRepository(Scanner::class)
-                    ->findOneBy(
-                        [
-                            'scannerType' => Scanner::TYPE_CRAWLER,
-                        ]
-                    )
-                ;
-
+    public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager)
+    {        
+        $scanner = $tokenStorage->getToken()->getUser();
 
         if (!$scanner) {
             throw new \Exception('No spider scanners registered');
         }
 
-        $urls = $this
-                    ->getDoctrine()
-                    ->getRepository(PropertyScanUrl::class)
-                    ->findAllNotNotSpidered()
+        $urls = $scanUrlRepository
+                    ->findBy(
+                        [
+                            'scanStatus' => ScanUrl::SCAN_STATUS_READY,
+                        ]
+                    )
                 ;
 
         $subset = array_slice($urls, 0, 5);
@@ -111,35 +106,11 @@ class ApiBatchController extends AbstractController
         ];
 
         foreach ($subset as $url) {
-            $log = (new PropertyScanUrlLog())
-                    ->setDirectionOut()
-                    ->setStatusSuccess()
-                    ->setScanner($scanner)
-                    ->setPropertyScanUrl($url)
-                ;
-
-            $entityManager->persist($log);
-
-            //This is temporary, but works
-            $data['urls'][] = new class($url) implements \JsonSerializable {
-                private $url;
-
-                public function __construct($url)
-                {
-                    $this->url = $url;
-                }
-
-                public function jsonSerialize()
-                {
-                    return [
-                        'url'               => $this->url->getUrl(),
-                        'propertyScanUrlId' => $this->url->getId(),
-                    ];
-                }
-            };
+            $data['urls'][] = [
+                'url' => $url->getUrl(),
+                'id' => $url->getId(),
+            ];
         }
-
-        $entityManager->flush();
 
         return new JsonResponse($data);
     }
