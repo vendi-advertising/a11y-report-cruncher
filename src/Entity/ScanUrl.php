@@ -47,6 +47,17 @@ class ScanUrl
      */
     private $scanStatus;
 
+    public const SCAN_STATUS_READY = 'SCAN_STATUS_READY';
+
+    public const SCAN_STATUS_SUCCESS = 'SCAN_STATUS_SUCCESS';
+
+    public const SCAN_STATUS_ERROR = 'SCAN_STATUS_ERROR';
+
+    public function __construct()
+    {
+        $this->scanStatus = self::SCAN_STATUS_READY;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
