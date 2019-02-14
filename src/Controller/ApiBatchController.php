@@ -81,7 +81,7 @@ class ApiBatchController extends AbstractController
     /**
      * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
-    public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager)
+    public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository)
     {        
         $scanner = $tokenStorage->getToken()->getUser();
 
