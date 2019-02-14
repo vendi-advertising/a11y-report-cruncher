@@ -161,7 +161,7 @@ class ApiBatchController extends AbstractController
                     )
                 ;
 
-        $subset = array_slice($urls, 0, 5);
+        $subset = array_slice($urls, 0, 15);
         unset($urls);
 
         $data = [
