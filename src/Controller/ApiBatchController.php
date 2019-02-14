@@ -46,12 +46,12 @@ class ApiBatchController extends AbstractController
         }
 
         //Turn this on to read from a specific file in the dump folder
-        $debug_mode = false;
+        $debug_mode = true;
 
         if($debug_mode){
             $root_dir = $kernel->getProjectDir();
             $dump_folder = Path::join($root_dir, 'var', 'post_dumps');
-            $dump_file = Path::join($dump_folder, 'dump_02-14-2019_0623pm.1550168615.json');
+            $dump_file = Path::join($dump_folder, 'dump_02-14-2019_0902pm.1550178121.json');
             $body = file_get_contents($dump_file);
         }else{
             //If we're in debug mode, we're probably using the browser so we don't want to log it
@@ -102,24 +102,28 @@ class ApiBatchController extends AbstractController
             }
             
             $entityManager->persist($scanUrl);
+
+            // dump($scanUrlJson);
             
             if(!$scanUrlJson->error){
                 if($scanUrlJson->subUrlRequestStatus){
                     $discovered_urls = $scanUrlJson->subUrlRequestStatus->urls;
                     foreach($discovered_urls as $disc_url){
-                        $existing = $scanUrlRepository->findBy(
+
+                        $existing = $scanUrlRepository->findOneBy(
                             [
                                 'url' => $disc_url,
                             ]
                         );
-    
+
                         if($existing){
                             continue;
                         }
-    
+
                         $newScanUrl = new ScanUrl();
                         $newScanUrl->setScan($scanUrl->getScan());
                         $newScanUrl->setUrl($disc_url);
+
                         $entityManager->persist($newScanUrl);
     
                     }
@@ -129,12 +133,8 @@ class ApiBatchController extends AbstractController
 
         $entityManager->flush();
 
-
         //TODO: Return something better
         return new JsonResponse('');
-
-        // file_put_contents('/var/www/a11y-primary-site/stage/wp-site/a11y-report-cruncher/tmp/data.txt', $data);
-        // die;
     }
 
     /**
