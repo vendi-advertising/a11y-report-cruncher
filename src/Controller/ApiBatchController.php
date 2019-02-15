@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Scanner;
 use App\Entity\ScanUrl;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,20 +32,20 @@ class ApiBatchController extends AbstractController
         $fileSystem->dumpFile($dump_file, $body);
     }
 
+    protected function get_scanner_from_token(TokenStorageInterface $tokenStorage): ?Scanner
+    {
+        return $tokenStorage->getToken()->getUser();
+    }
+
     /**
      * @Route("/api/v1/batch/submit", name="api_batch_submit", methods={"GET", "POST"},)
      */
     public function get_report_from_spider(EntityManagerInterface $entityManager, Request $request, TokenStorageInterface $tokenStorage, KernelInterface $kernel, Filesystem $fileSystem, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        $scanner = $tokenStorage->getToken()->getUser();
+        $scanner = $this->get_scanner_from_token($tokenStorage);
 
         if (!$scanner) {
-            return JsonResponse::create(
-                [
-                    'error' => 'Scanner not found',
-                ],
-                Response::HTTP_UNAUTHORIZED
-            );
+            return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
         }
 
         $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
@@ -147,20 +148,24 @@ class ApiBatchController extends AbstractController
         return new JsonResponse('');
     }
 
+    public function request_urls_a11y()
+    {
+        $scanner = $this->get_scanner_from_token($tokenStorage);
+
+        if (!$scanner) {
+            return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
     /**
      * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
     public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        $scanner = $tokenStorage->getToken()->getUser();
+        $scanner = $this->get_scanner_from_token($tokenStorage);
 
         if (!$scanner) {
-            return JsonResponse::create(
-                [
-                    'error' => 'Scanner not found',
-                ],
-                Response::HTTP_UNAUTHORIZED
-            );
+            return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
         }
 
         $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
