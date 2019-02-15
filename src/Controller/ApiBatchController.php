@@ -148,6 +148,9 @@ class ApiBatchController extends AbstractController
         return new JsonResponse('');
     }
 
+    /**
+     * @Route("/api/v1/scanner/a11y/get", name="api_scanner_a11y_get", methods={"GET", "POST"},)
+     */
     public function request_urls_a11y()
     {
         $scanner = $this->get_scanner_from_token($tokenStorage);
@@ -155,6 +158,8 @@ class ApiBatchController extends AbstractController
         if (!$scanner) {
             return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
         }
+
+        $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
     }
 
     /**
