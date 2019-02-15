@@ -45,7 +45,7 @@ class DbCliCommand extends Command
         //Our command
         $cmd = sprintf('mysql --user=%1$s --database=%2$s --host=%3$s', $username, $database, $host);
 
-        if(PHP_OS !== 'WINNT'){
+        if (PHP_OS !== 'WINNT') {
             $cmd = '/usr/bin/env ' . $cmd;
         }
 

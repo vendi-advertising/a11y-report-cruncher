@@ -8,9 +8,7 @@ use App\Entity\Scan;
 use App\Entity\Scanner;
 use App\Entity\ScanUrl;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -39,8 +37,8 @@ class MakeScanCommand extends AppCommandBase
                 }
             )
             ->setValidator(
-                function ($property_name) use ($property_names){
-                    if(!in_array($property_name, $property_names)){
+                function ($property_name) use ($property_names) {
+                    if (!in_array($property_name, $property_names)) {
                         throw new \RuntimeException('Property not found');
                     }
 

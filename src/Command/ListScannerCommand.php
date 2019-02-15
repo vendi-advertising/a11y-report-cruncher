@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Command;
 
@@ -22,14 +22,14 @@ class ListScannerCommand extends AppCommandBase
     {
         $scanners = $this->get_all_scanners();
 
-        if(0 === count($scanners)){
+        if (0 === count($scanners)) {
             $io = new SymfonyStyle($input, $output);
             $io->error('No scanners found');
             return;
         }
 
         $data = [];
-        foreach($scanners as $scanner){
+        foreach ($scanners as $scanner) {
             $data[] = [
                 $scanner->getId(),
                 $scanner->getName(),
@@ -43,6 +43,5 @@ class ListScannerCommand extends AppCommandBase
             ->setRows($data)
             ->render()
         ;
-
     }
 }

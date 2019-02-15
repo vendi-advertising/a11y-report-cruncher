@@ -30,7 +30,7 @@ class DemoInitCommand extends AppCommandBase
 
         $io->title('Demo setup');
         $io->text(
-                [
+            [
                     'This command is intended to be run after the initial database is created in order to get a stable',
                     'system up in running for demonstration and/or development purposes. If at any point one of the',
                     'individual sub-commands fails, we can\'t guarantee that state of the system so you are encouraged',

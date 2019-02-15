@@ -32,7 +32,7 @@ class AppFixtures extends Fixture
 
         $user = new User();
         $user->setEmail('chris@vendiadvertising.com');
-        $user->setPassword($this->passwordEncoder->encodePassword($user,'password'));
+        $user->setPassword($this->passwordEncoder->encodePassword($user, 'password'));
         $user->addClient($client);
         $user->setRoles([USER::ROLE_GLOBAL_ADMIN, USER::ROLE_USER]);
         $manager->persist($user);

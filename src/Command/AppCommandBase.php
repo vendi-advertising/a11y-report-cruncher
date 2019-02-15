@@ -125,7 +125,6 @@ abstract class AppCommandBase extends Command
     protected function get_SOMETHING_by_name(string $name, string $repository)
     {
         return $this->get_SOMETHING_by_SOMETHING_ELSE($name, 'name', $repository);
-        ;
     }
 
     protected function get_SOMETHING_by_SOMETHING_ELSE(string $value, string $property, string $repository)

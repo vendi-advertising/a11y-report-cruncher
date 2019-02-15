@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Client;
 use App\Entity\Property;
-use App\Entity\PropertyUrl;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

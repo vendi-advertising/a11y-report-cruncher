@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Scanner;
 use App\Entity\ScanUrl;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
-use Psr\Log\LoggerInterface;
 
 class ApiBatchController extends AbstractController
 {
@@ -44,21 +43,21 @@ class ApiBatchController extends AbstractController
                 [
                     'error' => 'Scanner not found',
                 ],
-                Response::HTTP_UNAUTHORIZED 
+                Response::HTTP_UNAUTHORIZED
             );
         }
 
-        $logger->info( sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
+        $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
 
         //Turn this on to read from a specific file in the dump folder
         $debug_mode = false;
 
-        if($debug_mode){
+        if ($debug_mode) {
             $root_dir = $kernel->getProjectDir();
             $dump_folder = Path::join($root_dir, 'var', 'post_dumps');
             $dump_file = Path::join($dump_folder, 'dump_02-14-2019_0902pm.1550178121.json');
             $body = file_get_contents($dump_file);
-        }else{
+        } else {
             //If we're in debug mode, we're probably using the browser so we don't want to log it
             $this->debug_dump_post($request, $kernel, $fileSystem);
             $body = $request->getContent();
@@ -71,7 +70,7 @@ class ApiBatchController extends AbstractController
                 [
                     'error' => 'Non array',
                 ],
-                Response::HTTP_BAD_REQUEST 
+                Response::HTTP_BAD_REQUEST
             );
         }
 
@@ -80,21 +79,20 @@ class ApiBatchController extends AbstractController
                 [
                     'error' => 'Empty array',
                 ],
-                Response::HTTP_EXPECTATION_FAILED  
+                Response::HTTP_EXPECTATION_FAILED
             );
         }
 
-        foreach($parsed as $scanUrlJson){
-
-            $logger->info( sprintf('Primary URL is %1$s', $scanUrlJson->url));
+        foreach ($parsed as $scanUrlJson) {
+            $logger->info(sprintf('Primary URL is %1$s', $scanUrlJson->url));
 
             $scanUrl = $scanUrlRepository->find($scanUrlJson->scanUrlId);
-            if(!$scanUrl){
+            if (!$scanUrl) {
                 return JsonResponse::create(
                     [
-                        'error' => sprintf( 'Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),
+                        'error' => sprintf('Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),
                     ],
-                    Response::HTTP_EXPECTATION_FAILED  
+                    Response::HTTP_EXPECTATION_FAILED
                 );
             }
             $scanUrl->setContentType($scanUrlJson->contentType);
@@ -102,20 +100,19 @@ class ApiBatchController extends AbstractController
             $scanUrl->setByteSize($scanUrlJson->byteSize);
 
             //TODO: This error needs to be logged somewhere
-            if($scanUrlJson->error){
+            if ($scanUrlJson->error) {
                 $scanUrl->setScanStatus(ScanUrl::SCAN_STATUS_ERROR);
-            }else{
+            } else {
                 $scanUrl->setScanStatus(ScanUrl::SCAN_STATUS_SUCCESS);
             }
             
             $entityManager->persist($scanUrl);
             
-            if(!$scanUrlJson->error){
-                if($scanUrlJson->subUrlRequestStatus){
+            if (!$scanUrlJson->error) {
+                if ($scanUrlJson->subUrlRequestStatus) {
                     $discovered_urls = $scanUrlJson->subUrlRequestStatus->urls;
-                    foreach($discovered_urls as $disc_url){
-
-                        $logger->info( sprintf('Processing potential URL %1$s', $disc_url));
+                    foreach ($discovered_urls as $disc_url) {
+                        $logger->info(sprintf('Processing potential URL %1$s', $disc_url));
 
                         $existing = $scanUrlRepository->findOneBy(
                             [
@@ -123,19 +120,18 @@ class ApiBatchController extends AbstractController
                             ]
                         );
 
-                        if($existing){
-                            $logger->info( 'URL exists... skipping');
+                        if ($existing) {
+                            $logger->info('URL exists... skipping');
                             continue;
                         }
 
-                        $logger->info( sprintf('Adding URL %1$s', $disc_url));
+                        $logger->info(sprintf('Adding URL %1$s', $disc_url));
 
                         $newScanUrl = new ScanUrl();
                         $newScanUrl->setScan($scanUrl->getScan());
                         $newScanUrl->setUrl($disc_url);
 
                         $entityManager->persist($newScanUrl);
-    
                     }
                 }
             }
@@ -155,7 +151,7 @@ class ApiBatchController extends AbstractController
      * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
     public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
-    {        
+    {
         $scanner = $tokenStorage->getToken()->getUser();
 
         if (!$scanner) {
@@ -163,11 +159,11 @@ class ApiBatchController extends AbstractController
                 [
                     'error' => 'Scanner not found',
                 ],
-                Response::HTTP_UNAUTHORIZED 
+                Response::HTTP_UNAUTHORIZED
             );
         }
 
-        $logger->info( sprintf('Scanner %1$d logged in', $scanner->getId()));
+        $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
 
         $urls = $scanUrlRepository->findAllUrlsReadyToScan(15);
 
