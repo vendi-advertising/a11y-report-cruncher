@@ -38,7 +38,7 @@ class ApiBatchController extends AbstractController
     }
 
     /**
-     * @Route("/api/v1/batch/submit", name="api_batch_submit", methods={"GET", "POST"},)
+     * @Route("/api/v1/scanner/crawler/send", name="api_batch_submit", methods={"GET", "POST"},)
      */
     public function get_report_from_spider(EntityManagerInterface $entityManager, Request $request, TokenStorageInterface $tokenStorage, KernelInterface $kernel, Filesystem $fileSystem, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
@@ -151,22 +151,22 @@ class ApiBatchController extends AbstractController
     /**
      * @Route("/api/v1/scanner/a11y/get", name="api_scanner_a11y_get", methods={"GET", "POST"},)
      */
-    public function request_urls_a11y()
+    public function request_urls_a11y(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        $scanner = $this->get_scanner_from_token($tokenStorage);
-
-        if (!$scanner) {
-            return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
+        return $this->get_urls_generic('findUrlsReadyForA11y', $tokenStorage, $scanUrlRepository, $logger);
     }
 
     /**
-     * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
+     * @Route("/api/v1/scanner/crawler/get", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
     public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
+        return $this->get_urls_generic('findAllUrlsReadyToScan', $tokenStorage, $scanUrlRepository, $logger);
+    }
+
+    protected function get_urls_generic(string $func, TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger) :JsonResponse
+    {
+
         $scanner = $this->get_scanner_from_token($tokenStorage);
 
         if (!$scanner) {
@@ -175,7 +175,7 @@ class ApiBatchController extends AbstractController
 
         $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
 
-        $urls = $scanUrlRepository->findAllUrlsReadyToScan(15);
+        $urls = $scanUrlRepository->$func(15);
 
         $data = [
             'urls' => [
