@@ -48,9 +48,14 @@ class AppFixtures extends Fixture
         $scanner->setScannerType(Scanner::TYPE_CRAWLER);
         $manager->persist($scanner);
 
+        $scanner = new Scanner();
+        $scanner->setName('a11y-1');
+        $scanner->setScannerType(Scanner::TYPE_A11Y);
+        $manager->persist($scanner);
+
         $scan = new Scan();
         $scan->setProperty($property);
-        $scan->setScanType(Scanner::TYPE_CRAWLER);
+        $scan->setScanType([Scanner::TYPE_CRAWLER, Scanner::TYPE_A11Y]);
         $manager->persist($scan);
 
         $scanUrl = new ScanUrl();

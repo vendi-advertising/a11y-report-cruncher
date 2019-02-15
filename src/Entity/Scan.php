@@ -25,14 +25,14 @@ class Scan
     private $property;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $scanType;
-
-    /**
      * @ORM\OneToMany(targetEntity="App\Entity\ScanUrl", mappedBy="scan", orphanRemoval=true)
      */
     private $scanUrls;
+
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $scanType = [];
 
     public function __construct()
     {
@@ -52,18 +52,6 @@ class Scan
     public function setProperty(?Property $property): self
     {
         $this->property = $property;
-
-        return $this;
-    }
-
-    public function getScanType(): ?string
-    {
-        return $this->scanType;
-    }
-
-    public function setScanType(string $scanType): self
-    {
-        $this->scanType = $scanType;
 
         return $this;
     }
@@ -95,6 +83,18 @@ class Scan
                 $scanUrl->setScan(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getScanType(): ?array
+    {
+        return $this->scanType;
+    }
+
+    public function setScanType(array $scanType): self
+    {
+        $this->scanType = $scanType;
 
         return $this;
     }

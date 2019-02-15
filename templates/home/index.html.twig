@@ -72,7 +72,7 @@ td {
             <ul>
             {% for scan in property.scans %}
                 <li>
-                    {{ scan.scanType }}
+                    {{ scan.scanType|join(',') }}
 
                     <table>
                         <thead>
