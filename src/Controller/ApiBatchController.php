@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
+use Psr\Log\LoggerInterface;
 
 class ApiBatchController extends AbstractController
 {
@@ -32,7 +33,7 @@ class ApiBatchController extends AbstractController
     /**
      * @Route("/api/v1/batch/submit", name="api_batch_submit", methods={"GET", "POST"},)
      */
-    public function get_report_from_spider(EntityManagerInterface $entityManager, Request $request, TokenStorageInterface $tokenStorage, KernelInterface $kernel, Filesystem $fileSystem, ScanUrlRepository $scanUrlRepository)
+    public function get_report_from_spider(EntityManagerInterface $entityManager, Request $request, TokenStorageInterface $tokenStorage, KernelInterface $kernel, Filesystem $fileSystem, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
         $scanner = $tokenStorage->getToken()->getUser();
 
@@ -45,8 +46,10 @@ class ApiBatchController extends AbstractController
             );
         }
 
+        $logger->info( sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
+
         //Turn this on to read from a specific file in the dump folder
-        $debug_mode = true;
+        $debug_mode = false;
 
         if($debug_mode){
             $root_dir = $kernel->getProjectDir();
@@ -81,6 +84,8 @@ class ApiBatchController extends AbstractController
 
         foreach($parsed as $scanUrlJson){
 
+            $logger->info( sprintf('Primary URL is %1$s', $scanUrlJson->url));
+
             $scanUrl = $scanUrlRepository->find($scanUrlJson->scanUrlId);
             if(!$scanUrl){
                 return JsonResponse::create(
@@ -102,13 +107,13 @@ class ApiBatchController extends AbstractController
             }
             
             $entityManager->persist($scanUrl);
-
-            // dump($scanUrlJson);
             
             if(!$scanUrlJson->error){
                 if($scanUrlJson->subUrlRequestStatus){
                     $discovered_urls = $scanUrlJson->subUrlRequestStatus->urls;
                     foreach($discovered_urls as $disc_url){
+
+                        $logger->info( sprintf('Processing potential URL %1$s', $disc_url));
 
                         $existing = $scanUrlRepository->findOneBy(
                             [
@@ -117,8 +122,11 @@ class ApiBatchController extends AbstractController
                         );
 
                         if($existing){
+                            $logger->info( 'URL exists... skipping');
                             continue;
                         }
+
+                        $logger->info( sprintf('Adding URL %1$s', $disc_url));
 
                         $newScanUrl = new ScanUrl();
                         $newScanUrl->setScan($scanUrl->getScan());
@@ -129,8 +137,12 @@ class ApiBatchController extends AbstractController
                     }
                 }
             }
+
+            //Flush here because repo findOneBy only queries the database, not what is queued
+            $entityManager->flush();
         }
 
+        //Just in case the loop doesn't run, flush once more
         $entityManager->flush();
 
         //TODO: Return something better
@@ -140,7 +152,7 @@ class ApiBatchController extends AbstractController
     /**
      * @Route("/api/v1/batch/request", name="api_batch_request", defaults={"_format": "json"}, methods={"GET"},)
      */
-    public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository)
+    public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {        
         $scanner = $tokenStorage->getToken()->getUser();
 
@@ -152,6 +164,8 @@ class ApiBatchController extends AbstractController
                 Response::HTTP_UNAUTHORIZED 
             );
         }
+
+        $logger->info( sprintf('Scanner %1$d logged in', $scanner->getId()));
 
         $urls = $scanUrlRepository->findAllUrlsReadyToScan(15);
 
