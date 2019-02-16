@@ -21,12 +21,12 @@ use Webmozart\PathUtil\Path;
 
 class ApiBatchController extends AbstractController
 {
-    protected function debug_dump_post(Request $request, KernelInterface $kernel, Filesystem $fileSystem)
+    protected function debug_dump_post(string $type, Request $request, KernelInterface $kernel, Filesystem $fileSystem)
     {
         $root_dir = $kernel->getProjectDir();
         $dump_folder = Path::join($root_dir, 'var', 'post_dumps');
         $fileSystem->mkdir($dump_folder);
-        $dump_file = Path::join($dump_folder, 'dump_' . date('m-d-Y_hia') . '.' . time() . '.json');
+        $dump_file = Path::join($dump_folder, 'dump_' . $type . '_' . date('m-d-Y_hia') . '.' . time() . '.json');
 
         $body = $request->getContent();
         $fileSystem->dumpFile($dump_file, $body);
@@ -35,6 +35,37 @@ class ApiBatchController extends AbstractController
     protected function get_scanner_from_token(TokenStorageInterface $tokenStorage): ?Scanner
     {
         return $tokenStorage->getToken()->getUser();
+    }
+
+    /**
+     * @Route("/api/v1/scanner/a11y/send", name="api_scanner_a11y_submit", methods={"GET", "POST"},)
+     */
+    public function get_a11y_report(EntityManagerInterface $entityManager, Request $request, TokenStorageInterface $tokenStorage, KernelInterface $kernel, Filesystem $fileSystem, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
+    {
+        $scanner = $this->get_scanner_from_token($tokenStorage);
+
+        if (!$scanner) {
+            return JsonResponse::create([ 'error' => 'Scanner not found', ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
+
+        //Turn this on to read from a specific file in the dump folder
+        $debug_mode = false;
+
+        if ($debug_mode) {
+            $root_dir = $kernel->getProjectDir();
+            $dump_folder = Path::join($root_dir, 'var', 'post_dumps');
+            $dump_file = Path::join($dump_folder, 'dump_02-14-2019_0902pm.1550178121.json');
+            $body = file_get_contents($dump_file);
+        } else {
+            //If we're in debug mode, we're probably using the browser so we don't want to log it
+            $this->debug_dump_post('a11y', $request, $kernel, $fileSystem);
+            $body = $request->getContent();
+        }
+
+        //TODO: Return something better
+        return new JsonResponse('');
     }
 
     /**
@@ -60,7 +91,7 @@ class ApiBatchController extends AbstractController
             $body = file_get_contents($dump_file);
         } else {
             //If we're in debug mode, we're probably using the browser so we don't want to log it
-            $this->debug_dump_post($request, $kernel, $fileSystem);
+            $this->debug_dump_post('crawler', $request, $kernel, $fileSystem);
             $body = $request->getContent();
         }
                 
@@ -153,7 +184,7 @@ class ApiBatchController extends AbstractController
      */
     public function request_urls_a11y(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        return $this->get_urls_generic('findUrlsReadyForA11y', $tokenStorage, $scanUrlRepository, $logger);
+        return $this->get_urls_generic('findUrlsReadyForA11y', 2, $tokenStorage, $scanUrlRepository, $logger);
     }
 
     /**
@@ -161,10 +192,10 @@ class ApiBatchController extends AbstractController
      */
     public function request_urls_for_spider(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        return $this->get_urls_generic('findAllUrlsReadyToScan', $tokenStorage, $scanUrlRepository, $logger);
+        return $this->get_urls_generic('findAllUrlsReadyToScan', 15, $tokenStorage, $scanUrlRepository, $logger);
     }
 
-    protected function get_urls_generic(string $func, TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger) :JsonResponse
+    protected function get_urls_generic(string $func, int $count, TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger) :JsonResponse
     {
 
         $scanner = $this->get_scanner_from_token($tokenStorage);
@@ -175,7 +206,7 @@ class ApiBatchController extends AbstractController
 
         $logger->info(sprintf('Scanner %1$d logged in', $scanner->getId()));
 
-        $urls = $scanUrlRepository->$func(15);
+        $urls = $scanUrlRepository->$func($count);
 
         $data = [
             'urls' => [
