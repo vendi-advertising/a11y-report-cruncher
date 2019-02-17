@@ -6,6 +6,9 @@ namespace App\Service;
 
 use App\Entity\AccessibilityCheck;
 use App\Entity\AccessibilityCheckVersion;
+use App\Entity\AccessibilityCheckResult;
+use App\Entity\AccessibilityCheckResultRelatedNode;
+use App\Repository\ScanUrlRepository;
 use App\Repository\AccessibilityCheckRepository;
 use App\Repository\AccessibilityCheckVersionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,12 +18,14 @@ class AccessibilityReportHandler
 {
     private $accessibilityCheckRepository;
     private $accessibilityCheckVersionRepository;
+    private $scanUrlRepository;
     private $entityManager;
 
-    public function __construct(AccessibilityCheckRepository $accessibilityCheckRepository, AccessibilityCheckVersionRepository $accessibilityCheckVersionRepository, EntityManagerInterface $entityManager)
+    public function __construct(AccessibilityCheckRepository $accessibilityCheckRepository, AccessibilityCheckVersionRepository $accessibilityCheckVersionRepository, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager)
     {
         $this->accessibilityCheckRepository = $accessibilityCheckRepository;
         $this->accessibilityCheckVersionRepository = $accessibilityCheckVersionRepository;
+        $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
     }
 
@@ -28,6 +33,15 @@ class AccessibilityReportHandler
     {
         if(!property_exists($obj, 'subUrlRequestStatus')){
             throw new \Exception('Could not find property subUrlRequestStatus');
+        }
+
+        if(!property_exists($obj, 'scanUrlId')){
+            throw new \Exception('Could not find property scanUrlId');
+        }
+
+        $scanUrl = $this->scanUrlRepository->find((int) $obj->scanUrlId);
+        if(!$scanUrl){
+            throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
         $sections = ['violations', 'passes', 'incomplete', 'inapplicable'];
@@ -75,7 +89,23 @@ class AccessibilityReportHandler
                                 continue;
                             }
 
-                            dump($check);
+                            // dump($check);
+                            // dump($check_version);
+
+                            $acr = new AccessibilityCheckResult();
+                            $acr->setScanUrl($scanUrl);
+                            $acr->setAccessibilityCheckVersion($check_version);
+
+                            foreach($check->relatedNodes as $related_node){
+                                $nr = new AccessibilityCheckResultRelatedNode();
+                                $nr->setHtml($related_node->html);
+                                $nr->setTargets($related_node->target);
+                                $this->entityManager->persist($nr);
+                                $acr->addRelatedNode($nr);
+                            }
+
+                            $this->entityManager->persist($acr);
+                            $this->entityManager->flush();
 
                         }
                     }

@@ -26,6 +26,12 @@ class AccessibilityCheckResultRelatedNode
      */
     private $targets = [];
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\AccessibilityCheckResult", inversedBy="relatedNodes")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $accessibilityCheckResult;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +57,18 @@ class AccessibilityCheckResultRelatedNode
     public function setTargets(array $targets): self
     {
         $this->targets = $targets;
+
+        return $this;
+    }
+
+    public function getAccessibilityCheckResult(): ?AccessibilityCheckResult
+    {
+        return $this->accessibilityCheckResult;
+    }
+
+    public function setAccessibilityCheckResult(?AccessibilityCheckResult $accessibilityCheckResult): self
+    {
+        $this->accessibilityCheckResult = $accessibilityCheckResult;
 
         return $this;
     }
