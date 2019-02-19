@@ -35,6 +35,11 @@ class AccessibilityCheckResult
      */
     private $scanUrl;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $category;
+
     public function __construct()
     {
         $this->relatedNodes = new ArrayCollection();
@@ -96,6 +101,18 @@ class AccessibilityCheckResult
     public function setScanUrl(?ScanUrl $scanUrl): self
     {
         $this->scanUrl = $scanUrl;
+
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?string $category): self
+    {
+        $this->category = $category;
 
         return $this;
     }

@@ -29,6 +29,62 @@ class AccessibilityReportHandler
         $this->entityManager = $entityManager;
     }
 
+    public function get_report_for_single_scan_url(int $scanUrlId)
+    {
+        $scanUrl = $this->scanUrlRepository->find($scanUrlId);
+        if(!$scanUrl){
+            throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
+        }
+
+        return $this
+                ->scanUrlRepository
+                ->createQueryBuilder('su')
+                ->leftJoin('su.accessibilityCheckResults', 'acr')
+                ->leftJoin('acr.accessibilityCheckVersion', 'acv')
+                ->leftJoin('acv.accessibilityCheck', 'ac')
+                ->select('
+                            su.id,
+                            su.url,
+                            acv.message,
+                            acv.impact,
+                            ac.name'
+                        )
+                ->andWhere('su.id = :scanUrlId')
+                ->setParameter('scanUrlId', $scanUrl->getId())
+                ->setMaxResults(10)
+                ->getQuery()
+                ->getResult()
+            ;
+
+        
+        /*
+SELECT
+    su.id,
+    su.url,
+    acv.message,
+    acv.impact,
+    ac.name
+FROM
+    scan_url su
+LEFT JOIN
+    accessibility_check_result acr
+ON
+    su.id = acr.scan_url_id
+LEFT JOIN
+    accessibility_check_version acv
+ON
+    acv.id = acr.accessibility_check_version_id
+LEFT JOIN
+    accessibility_check ac
+ON
+    ac.id = acv.accessibility_check_id
+WHERE
+    su.id = 1
+LIMIT 10;
+
+        */
+    }
+
     public function handle_report($obj)
     {
         if(!property_exists($obj, 'subUrlRequestStatus')){
