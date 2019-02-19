@@ -4,7 +4,27 @@
 
 {% block body %}
 
-<div class="example-wrapper">
-    
-</div>
+    <table>
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Url</td>
+                <td>Message</td>
+                <td>Impact</td>
+                <td>Name</td>
+            </tr>
+        </thead>
+        <tbody>
+    {% for r in report %}
+            <tr>
+                <td>{{r.id}}</td>
+                <td>{{r.url}}</td>
+                <td>{{r.message}}</td>
+                <td>{{r.impact}}</td>
+                <td>{{r.name}}</td>
+            </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+
 {% endblock %}
