@@ -129,7 +129,7 @@ class ApiBatchController extends AbstractController
         $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
 
         //Turn this on to read from a specific file in the dump folder
-        $debug_mode = true;
+        $debug_mode = false;
 
         if ($debug_mode) {
             $root_dir = $kernel->getProjectDir();

@@ -40,9 +40,15 @@ class AccessibilityCheckResult
      */
     private $category;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\AccessibilityTag")
+     */
+    private $tags;
+
     public function __construct()
     {
         $this->relatedNodes = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -113,6 +119,32 @@ class AccessibilityCheckResult
     public function setCategory(?string $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|AccessibilityTag[]
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(AccessibilityTag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+        }
+
+        return $this;
+    }
+
+    public function removeTag(AccessibilityTag $tag): self
+    {
+        if ($this->tags->contains($tag)) {
+            $this->tags->removeElement($tag);
+        }
 
         return $this;
     }

@@ -8,9 +8,11 @@ use App\Entity\AccessibilityCheck;
 use App\Entity\AccessibilityCheckVersion;
 use App\Entity\AccessibilityCheckResult;
 use App\Entity\AccessibilityCheckResultRelatedNode;
+use App\Entity\AccessibilityTag;
 use App\Repository\ScanUrlRepository;
 use App\Repository\AccessibilityCheckRepository;
 use App\Repository\AccessibilityCheckVersionRepository;
+use App\Repository\AccessibilityTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -18,13 +20,15 @@ class AccessibilityReportHandler
 {
     private $accessibilityCheckRepository;
     private $accessibilityCheckVersionRepository;
+    private $accessibilityTagRepository;
     private $scanUrlRepository;
     private $entityManager;
 
-    public function __construct(AccessibilityCheckRepository $accessibilityCheckRepository, AccessibilityCheckVersionRepository $accessibilityCheckVersionRepository, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager)
+    public function __construct(AccessibilityCheckRepository $accessibilityCheckRepository, AccessibilityCheckVersionRepository $accessibilityCheckVersionRepository, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager, AccessibilityTagRepository $accessibilityTagRepository)
     {
         $this->accessibilityCheckRepository = $accessibilityCheckRepository;
         $this->accessibilityCheckVersionRepository = $accessibilityCheckVersionRepository;
+        $this->accessibilityTagRepository = $accessibilityTagRepository;
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
     }
@@ -36,25 +40,30 @@ class AccessibilityReportHandler
             throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
-        return $this
+        $query = $this
                 ->scanUrlRepository
                 ->createQueryBuilder('su')
                 ->leftJoin('su.accessibilityCheckResults', 'acr')
                 ->leftJoin('acr.accessibilityCheckVersion', 'acv')
                 ->leftJoin('acv.accessibilityCheck', 'ac')
+                ->innerJoin('acr.tags', 'tags')
                 ->select('
                             su.id,
                             su.url,
                             acv.message,
                             acv.impact,
-                            ac.name'
+                            ac.name,
+                            tags.name as tag_name'
                         )
                 ->andWhere('su.id = :scanUrlId')
                 ->setParameter('scanUrlId', $scanUrl->getId())
                 ->setMaxResults(10)
                 ->getQuery()
-                ->getResult()
             ;
+
+            // dd($query->getSql());
+
+            return $query->getResult();
 
         
         /*
@@ -110,6 +119,8 @@ LIMIT 10;
 
             $current_rules = $obj->subUrlRequestStatus->$section_name;
             foreach($current_rules as $current_rule){
+
+                $tags = $this->get_or_create_tags($current_rule);
     
                 if(!property_exists($current_rule, 'nodes')){
                     continue;
@@ -145,12 +156,13 @@ LIMIT 10;
                                 continue;
                             }
 
-                            // dump($check);
-                            // dump($check_version);
-
                             $acr = new AccessibilityCheckResult();
                             $acr->setScanUrl($scanUrl);
                             $acr->setAccessibilityCheckVersion($check_version);
+                            $acr->setCategory($section_name);
+                            foreach($tags as $tag){
+                                $acr->addTag($tag);
+                            }
 
                             foreach($check->relatedNodes as $related_node){
                                 $nr = new AccessibilityCheckResultRelatedNode();
@@ -171,6 +183,40 @@ LIMIT 10;
             }
            
         }
+    }
+
+    protected function get_or_create_tags($obj) : array
+    {
+        static $tags = [];
+
+        $ret = [];
+        if(0 === count($obj->tags)){
+            return $ret;
+        }
+
+        foreach($obj->tags as $tag){
+            if(array_key_exists($tag, $tags)){
+                $ret[] = $tags[$tag];
+                continue;
+            }
+
+            $maybe_tag = $this->accessibilityTagRepository->findOneBy(['name' => $tag]);
+            if($maybe_tag){
+                $tags[$tag] = $maybe_tag;
+                $ret[] = $maybe_tag;
+                continue;
+            }
+
+            $db_tag = new AccessibilityTag();
+            $db_tag->setName($tag);
+            $this->entityManager->persist($db_tag);
+            $this->entityManager->flush();
+
+            $tags[$tag] = $db_tag;
+            $ret[] = $db_tag;
+        }
+
+        return $ret;
     }
 
     protected function get_or_create_check_version($check) : AccessibilityCheckVersion
