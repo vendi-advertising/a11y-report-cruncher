@@ -129,7 +129,7 @@ class ApiBatchController extends AbstractController
         $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
 
         //Turn this on to read from a specific file in the dump folder
-        $debug_mode = false;
+        $debug_mode = true;
 
         if ($debug_mode) {
             $root_dir = $kernel->getProjectDir();
@@ -159,11 +159,14 @@ class ApiBatchController extends AbstractController
                 return JsonResponse::create(['error' => sprintf('Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),],Response::HTTP_EXPECTATION_FAILED);
             }
 
-            $accessibilityReportHandler->handle_report($scanUrlJson);
+            $results = $accessibilityReportHandler->process_v2($scanUrlJson);
 
-            // dump($scanUrlJson);
+            dump($results);
 
         }
+
+        return $this->render('dump.twig', ['results' => $results]);
+
 
         //TODO: Return something better
         return new JsonResponse('');

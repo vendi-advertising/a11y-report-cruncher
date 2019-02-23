@@ -4,33 +4,246 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\AccessibilityCheck;
-use App\Entity\AccessibilityCheckVersion;
-use App\Entity\AccessibilityCheckResult;
-use App\Entity\AccessibilityCheckResultRelatedNode;
-use App\Entity\AccessibilityTag;
+use App\Entity\aXe\Rule;
+use App\Repository\aXe\ImpactRepository;
+use App\Repository\aXe\ResultTypeRepository;
+use App\Repository\aXe\TagRepository;
+use App\Repository\aXe\CheckRepository;
 use App\Repository\ScanUrlRepository;
-use App\Repository\AccessibilityCheckRepository;
-use App\Repository\AccessibilityCheckVersionRepository;
-use App\Repository\AccessibilityTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 class AccessibilityReportHandler
 {
-    private $accessibilityCheckRepository;
-    private $accessibilityCheckVersionRepository;
-    private $accessibilityTagRepository;
     private $scanUrlRepository;
     private $entityManager;
 
-    public function __construct(AccessibilityCheckRepository $accessibilityCheckRepository, AccessibilityCheckVersionRepository $accessibilityCheckVersionRepository, ScanUrlRepository $scanUrlRepository, EntityManagerInterface $entityManager, AccessibilityTagRepository $accessibilityTagRepository)
+    private $resultTypeRepository;
+    private $tagRepository;
+    private $checkRepository;
+
+    public function __construct(
+            ScanUrlRepository $scanUrlRepository,
+            EntityManagerInterface $entityManager,
+            ResultTypeRepository $resultTypeRepository,
+            TagRepository $tagRepository,
+            CheckRepository $checkRepository
+        )
     {
-        $this->accessibilityCheckRepository = $accessibilityCheckRepository;
-        $this->accessibilityCheckVersionRepository = $accessibilityCheckVersionRepository;
-        $this->accessibilityTagRepository = $accessibilityTagRepository;
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
+
+        $this->resultTypeRepository = $resultTypeRepository;
+        $this->tagRepository = $tagRepository;
+        $this->checkRepository = $checkRepository;
+    }
+
+    public function process_v2_tags_only($obj)
+    {
+        static $cache = [];
+        if(!array_key_exists($obj->scanUrlId, $cache)){
+            $tags_as_strings = [];
+            $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
+            foreach($result_type_names as $result_type_name){
+                foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
+                    if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+                        continue;
+                    }
+
+                    $tags_as_strings = array_merge($tags_as_strings, $rule_thing->tags);
+                }
+            }
+
+            $tags_as_strings = array_values(array_unique($tags_as_strings));
+
+            $tags_as_objects = $this->tagRepository->findAll();
+            $dirty = false;
+
+            $existing_tag_names = [];
+            foreach($tags_as_objects as $tag){
+                $existing_tag_names[] = $tag->getName();
+            }
+
+            foreach($tags_as_strings as $tag_name){
+                if(!in_array($tag_name, $existing_tag_names)){
+                    $dirty = true;
+                    $this->tagRepository->get_or_create_one($tag_name);
+                }
+            }
+
+            if($dirty){
+                $tags_as_objects = $this->tagRepository->findAll();
+            }
+            $cache[$obj->scanUrlId] = $tags_as_objects;
+        }
+
+        return $cache[$obj->scanUrlId];
+    }
+
+    protected function get_tags($obj, $rule_thing) : array
+    {
+        $all_tags = $this->process_v2_tags_only($obj);
+        $tags = [];
+        foreach($rule_thing->tags as $tag){
+            foreach($all_tags as $tag_obj){
+                if($tag === $tag_obj->getName()){
+                    $tags[] = $tag_obj;
+                    break;
+                }
+            }
+        }
+
+        return $tags;
+    }
+
+    protected function get_checks($obj, $node) : array
+    {
+        $all_checks = $this->process_v2_checks_only($obj);
+
+        $check_types = [
+            'any',
+            'all',
+            'none',
+        ];
+
+        $ret = [];
+        foreach($check_types as $check_type_name){
+            $check_things = $node->$check_type_name;
+            if(0===count($check_things)){
+                continue;
+            }
+
+            foreach($check_things as $check_thing){
+                foreach($all_checks as $check_obj){
+                    if($check_obj->getName() === $check_thing->id){
+                        $ret[] = $check_obj;
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+
+    public function process_v2_checks_only($obj)
+    {
+        static $cache = [];
+        if(!array_key_exists($obj->scanUrlId, $cache)){
+
+            $checks_as_strings = [];
+            $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
+            foreach($result_type_names as $result_type_name){
+                foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
+                    if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+                        continue;
+                    }
+    
+                    $node = reset($rule_thing->nodes);
+    
+                    $check_types = [
+                        'any',
+                        'all',
+                        'none',
+                    ];
+                    foreach($check_types as $check_type_name){
+                        $check_things = $node->$check_type_name;
+                        if(0===count($check_things)){
+                            continue;
+                        }
+    
+                        foreach($check_things as $check_thing){
+                            if(!array_key_exists($check_thing->id, $checks_as_strings)){
+                                $checks_as_strings[$check_thing->id] = [
+                                    'impact' => $check_thing->impact,
+                                    'type' => $check_type_name,
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+    
+            ksort($checks_as_strings);
+            
+            $checks_as_objects = $this->checkRepository->findAll();
+            $dirty = false;
+            $existing_check_names = [];
+            foreach($checks_as_objects as $check){
+                $existing_check_names[] = $check->getName();
+            }
+    
+            foreach($checks_as_strings as $check_name => $data){
+                if(!in_array($check_name, $existing_check_names)){
+                    $dirty = true;
+                    $this->checkRepository->get_or_create_one($check_name, $data);
+                }
+            }
+    
+            if($dirty){
+                $checks_as_objects = $this->checkRepository->findAll();
+            }
+
+            $cache[$obj->scanUrlId] = $checks_as_objects;
+        }
+
+        return $cache[$obj->scanUrlId];
+
+    }
+
+    public function process_v2($obj)
+    {
+        if(!property_exists($obj, 'subUrlRequestStatus')){
+            throw new \Exception('Could not find property subUrlRequestStatus');
+        }
+
+        if(!property_exists($obj, 'scanUrlId')){
+            throw new \Exception('Could not find property scanUrlId');
+        }
+
+        $scanUrl = $this->scanUrlRepository->find((int) $obj->scanUrlId);
+        if(!$scanUrl){
+            throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
+        }
+
+        $rules = [];
+
+        $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
+        foreach($result_type_names as $result_type_name){
+            $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
+
+            if(!property_exists($obj->subUrlRequestStatus, $result_type_name)){
+                continue;
+            }
+
+            foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
+                
+                if(!property_exists($rule_thing, 'nodes')){
+                    throw new \Exception('Rule missing node collection');
+                }
+
+                if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+                    continue;
+                }
+
+                $node = reset($rule_thing->nodes);
+
+                $rule = new Rule();
+                $rule->addTags($this->get_tags($obj, $rule_thing));
+                $rule->setImpact($rule_thing->impact);
+                $rule->setName($rule_thing->id);
+                $rule->setDescription($rule_thing->description);
+                $rule->setHelp($rule_thing->help);
+                $rule->addChecks($this->get_checks($obj, $node));
+                
+
+                $this->entityManager->persist($rule);
+                $this->entityManager->flush();
+
+                $rules[] = $rule;
+            }
+        }
+        
+        return $rules;
     }
 
     public function get_report_for_single_scan_url(int $scanUrlId)
@@ -64,220 +277,5 @@ class AccessibilityReportHandler
             // dd($query->getSql());
 
             return $query->getResult();
-
-        
-        /*
-SELECT
-    su.id,
-    su.url,
-    acv.message,
-    acv.impact,
-    ac.name
-FROM
-    scan_url su
-LEFT JOIN
-    accessibility_check_result acr
-ON
-    su.id = acr.scan_url_id
-LEFT JOIN
-    accessibility_check_version acv
-ON
-    acv.id = acr.accessibility_check_version_id
-LEFT JOIN
-    accessibility_check ac
-ON
-    ac.id = acv.accessibility_check_id
-WHERE
-    su.id = 1
-LIMIT 10;
-
-        */
-    }
-
-    public function handle_report($obj)
-    {
-        if(!property_exists($obj, 'subUrlRequestStatus')){
-            throw new \Exception('Could not find property subUrlRequestStatus');
-        }
-
-        if(!property_exists($obj, 'scanUrlId')){
-            throw new \Exception('Could not find property scanUrlId');
-        }
-
-        $scanUrl = $this->scanUrlRepository->find((int) $obj->scanUrlId);
-        if(!$scanUrl){
-            throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
-        }
-
-        $sections = ['violations', 'passes', 'incomplete', 'inapplicable'];
-        $node_cats = ['any', 'all', 'none'];
-
-        foreach($sections as $section_name){
-            if(!property_exists($obj->subUrlRequestStatus, $section_name)){
-                continue;
-            }
-
-            $current_rules = $obj->subUrlRequestStatus->$section_name;
-            foreach($current_rules as $current_rule){
-
-                $tags = $this->get_or_create_tags($current_rule);
-    
-                if(!property_exists($current_rule, 'nodes')){
-                    continue;
-                }
-    
-                $nodes = $current_rule->nodes;
-    
-                if(!is_array($nodes) || 0 === count($nodes)){
-                    continue;
-                }
-    
-                foreach($nodes as $node){
-
-                    foreach($node_cats as $node_cat_name){
-                        if(!property_exists($node, $node_cat_name)){
-                            continue;
-                        }
-
-                        $node_cat = $node->$node_cat_name;
-
-                        if(!is_array($node_cat) || 0 === count($node_cat)){
-                            continue;
-                        }
-
-                        foreach($node_cat as $check){
-                            if(!property_exists($check, 'id')){
-                                throw new \Exception('Check is missing property: id');
-                            }
-
-                            $check_version = $this->get_or_create_check_version($check);
-
-                            if(0 === count($check->relatedNodes)){
-                                continue;
-                            }
-
-                            $acr = new AccessibilityCheckResult();
-                            $acr->setScanUrl($scanUrl);
-                            $acr->setAccessibilityCheckVersion($check_version);
-                            $acr->setCategory($section_name);
-                            foreach($tags as $tag){
-                                $acr->addTag($tag);
-                            }
-
-                            foreach($check->relatedNodes as $related_node){
-                                $nr = new AccessibilityCheckResultRelatedNode();
-                                $nr->setHtml($related_node->html);
-                                $nr->setTargets($related_node->target);
-                                $this->entityManager->persist($nr);
-                                $acr->addRelatedNode($nr);
-                            }
-
-                            $this->entityManager->persist($acr);
-                            $this->entityManager->flush();
-
-                        }
-                    }
-                }
-
-
-            }
-           
-        }
-    }
-
-    protected function get_or_create_tags($obj) : array
-    {
-        static $tags = [];
-
-        $ret = [];
-        if(0 === count($obj->tags)){
-            return $ret;
-        }
-
-        foreach($obj->tags as $tag){
-            if(array_key_exists($tag, $tags)){
-                $ret[] = $tags[$tag];
-                continue;
-            }
-
-            $maybe_tag = $this->accessibilityTagRepository->findOneBy(['name' => $tag]);
-            if($maybe_tag){
-                $tags[$tag] = $maybe_tag;
-                $ret[] = $maybe_tag;
-                continue;
-            }
-
-            $db_tag = new AccessibilityTag();
-            $db_tag->setName($tag);
-            $this->entityManager->persist($db_tag);
-            $this->entityManager->flush();
-
-            $tags[$tag] = $db_tag;
-            $ret[] = $db_tag;
-        }
-
-        return $ret;
-    }
-
-    protected function get_or_create_check_version($check) : AccessibilityCheckVersion
-    {
-        $hash = $this->create_key_for_check_version($check);
-        static $found_check_versions = [];
-
-        if(!array_key_exists($check->id, $found_check_versions)){
-            $found_check_versions[$check->id] = [];
-        }
-
-        if(array_key_exists($hash, $found_check_versions[$check->id])){
-            return $found_check_versions[$check->id][$hash];
-        }
-
-        $existing = $this->accessibilityCheckVersionRepository->findOneBy(['impact' => $check->impact, 'message' => ($check->message ?? '')]);
-        if($existing){
-            $found_check_ids[$check->id][$hash] = $existing;
-            return $existing;
-        }
-
-        $base_check = $this->get_or_create_check($check);
-
-        $new_check = new AccessibilityCheckVersion();
-        $new_check->setMessage($check->message ?? '');
-        $new_check->setImpact($check->impact);
-        $new_check->setAccessibilityCheck($base_check);
-        
-        $this->entityManager->persist($new_check);
-        $this->entityManager->flush();
-
-        $found_check_ids[$check->id][$hash] = $new_check;
-        return $new_check;
-
-    }
-
-    protected function create_key_for_check_version($check) : string
-    {
-        return $check->impact . ':' . ($check->message ?? '');
-    }
-
-    protected function get_or_create_check($check) : AccessibilityCheck
-    {
-        static $found_check_ids = [];
-        if(array_key_exists($check->id, $found_check_ids)){
-            return $found_check_ids[$check->id];
-        }
-
-        $existing_check_from_db = $this->accessibilityCheckRepository->findOneBy(['name' => $check->id]);
-        if($existing_check_from_db){
-            $found_check_ids[$check->id] = $existing_check_from_db;
-            return $existing_check_from_db;
-        }
-
-        $new_check = new AccessibilityCheck();
-        $new_check->setName($check->id);
-        
-        $this->entityManager->persist($new_check);
-        $this->entityManager->flush();
-
-        $found_check_ids[$check->id] = $new_check;
-        return $new_check;
     }
 }

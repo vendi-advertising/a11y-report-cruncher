@@ -49,11 +49,6 @@ class ScanUrl
      */
     private $scanStatus;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\AccessibilityCheckResult", mappedBy="scanUrl", orphanRemoval=true)
-     */
-    private $accessibilityCheckResults;
-
     public const SCAN_STATUS_READY = 'SCAN_STATUS_READY';
 
     public const SCAN_STATUS_SUCCESS = 'SCAN_STATUS_SUCCESS';
@@ -139,37 +134,6 @@ class ScanUrl
     public function setScanStatus(?string $scanStatus): self
     {
         $this->scanStatus = $scanStatus;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|AccessibilityCheckResult[]
-     */
-    public function getAccessibilityCheckResults(): Collection
-    {
-        return $this->accessibilityCheckResults;
-    }
-
-    public function addAccessibilityCheckResult(AccessibilityCheckResult $accessibilityCheckResult): self
-    {
-        if (!$this->accessibilityCheckResults->contains($accessibilityCheckResult)) {
-            $this->accessibilityCheckResults[] = $accessibilityCheckResult;
-            $accessibilityCheckResult->setScanUrl($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAccessibilityCheckResult(AccessibilityCheckResult $accessibilityCheckResult): self
-    {
-        if ($this->accessibilityCheckResults->contains($accessibilityCheckResult)) {
-            $this->accessibilityCheckResults->removeElement($accessibilityCheckResult);
-            // set the owning side to null (unless already changed)
-            if ($accessibilityCheckResult->getScanUrl() === $this) {
-                $accessibilityCheckResult->setScanUrl(null);
-            }
-        }
 
         return $this;
     }
