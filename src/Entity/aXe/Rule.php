@@ -161,21 +161,6 @@ class Rule
         return implode(',', $names);
     }
 
-    // public function get_cache_key() : string
-    // {
-    //     $raw = $this->getName();
-
-    //     $funcs = ['getChecksAll', 'getChecksNone', 'getChecksAny'];
-    //     foreach($funcs as $func){
-    //         foreach($this->$func() as $check){
-    //             $raw .= $check->getName();
-    //         }
-    //     }
-
-    //     return \hash('sha256', $raw);
-
-    // }
-
     /**
      * @return Collection|Check[]
      */
