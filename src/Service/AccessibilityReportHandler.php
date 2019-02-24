@@ -204,11 +204,9 @@ class AccessibilityReportHandler
             throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
-        $rules = [];
-
         $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
         foreach ($result_type_names as $result_type_name) {
-            $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
+            // $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
 
             if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
                 continue;
@@ -241,11 +239,10 @@ class AccessibilityReportHandler
                     $real_rule = $rule;
                 }
 
-                $rules[] = $real_rule;
+                //Work with $real_rule here
             }
         }
         
-        return $rules;
     }
 
     public function get_report_for_single_scan_url(int $scanUrlId)
