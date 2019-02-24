@@ -19,6 +19,42 @@ class RuleRepository extends ServiceEntityRepository
         parent::__construct($registry, Rule::class);
     }
 
+    public function get_rule(Rule $maybe_rule) : ?Rule
+    {
+        $qb = $this
+                ->createQueryBuilder('r')
+                ->select('r as real_rule, GROUP_CONCAT(DISTINCT c.name ORDER BY c.name ASC) as check_names')
+                ->leftJoin('r.checks', 'c')
+                ->andWhere('r.name = :rule')
+                ->setParameter('rule', $maybe_rule->getName())
+        ;
+
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        if(!$result){
+            return null;
+        }
+
+        $maybe_rule_check_names = $maybe_rule->get_check_names_joined();
+
+        foreach($result as $parts){
+            $real_rule = $parts['real_rule'];
+            $check_names = $parts['check_names'];
+
+            if(!$real_rule instanceOf Rule){
+                throw new \Exception('Non-rule returned from get_rule');
+            }
+
+            if($maybe_rule_check_names === $check_names){
+                return $real_rule;
+            }
+        }
+
+        return null;
+    }
+
     // /**
     //  * @return Rule[] Returns an array of Rule objects
     //  */

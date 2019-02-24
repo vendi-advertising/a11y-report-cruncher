@@ -145,6 +145,23 @@ class Rule
         return $this;
     }
 
+    public function get_check_names_joined() : string
+    {
+        $checks = $this->getChecks();
+
+        $names = array_map(
+            function($check)
+            {
+                return $check->getName();
+            },
+            $checks->toArray()
+        );
+
+        asort($names);
+
+        return implode(',', $names);
+    }
+
     // public function get_cache_key() : string
     // {
     //     $raw = $this->getName();

@@ -9,6 +9,7 @@ use App\Repository\aXe\ImpactRepository;
 use App\Repository\aXe\ResultTypeRepository;
 use App\Repository\aXe\TagRepository;
 use App\Repository\aXe\CheckRepository;
+use App\Repository\aXe\RuleRepository;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -21,13 +22,15 @@ class AccessibilityReportHandler
     private $resultTypeRepository;
     private $tagRepository;
     private $checkRepository;
+    private $ruleRepository;
 
     public function __construct(
             ScanUrlRepository $scanUrlRepository,
             EntityManagerInterface $entityManager,
             ResultTypeRepository $resultTypeRepository,
             TagRepository $tagRepository,
-            CheckRepository $checkRepository
+            CheckRepository $checkRepository,
+            RuleRepository $ruleRepository
         )
     {
         $this->scanUrlRepository = $scanUrlRepository;
@@ -36,6 +39,7 @@ class AccessibilityReportHandler
         $this->resultTypeRepository = $resultTypeRepository;
         $this->tagRepository = $tagRepository;
         $this->checkRepository = $checkRepository;
+        $this->ruleRepository = $ruleRepository;
     }
 
     public function process_v2_tags_only($obj)
@@ -234,12 +238,16 @@ class AccessibilityReportHandler
                 $rule->setDescription($rule_thing->description);
                 $rule->setHelp($rule_thing->help);
                 $rule->addChecks($this->get_checks($obj, $node));
-                
 
-                $this->entityManager->persist($rule);
-                $this->entityManager->flush();
+                $real_rule = $this->ruleRepository->get_rule($rule);
 
-                $rules[] = $rule;
+                if(!$real_rule){
+                    $this->entityManager->persist($rule);
+                    $this->entityManager->flush();
+                    $real_rule = $rule;
+                }
+
+                $rules[] = $real_rule;
             }
         }
         
