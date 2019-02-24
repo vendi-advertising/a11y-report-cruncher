@@ -29,3 +29,6 @@ doctrine:
                 alias: App
         second_level_cache:
             enabled: true
+        dql:
+            string_functions:
+                group_concat: DoctrineExtensions\Query\Mysql\GroupConcat
