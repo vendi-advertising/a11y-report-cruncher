@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\AccessibilityCheck;
 use App\Entity\Scanner;
 use App\Entity\ScanUrl;
-use App\Repository\AccessibilityCheckRepository;
 use App\Repository\ScanUrlRepository;
 use App\Service\AccessibilityReportHandler;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,76 +38,6 @@ class ApiBatchController extends AbstractController
         return $tokenStorage->getToken()->getUser();
     }
 
-    protected function build_a11y_checks($obj, AccessibilityCheckRepository $accessibilityCheckRepository, EntityManagerInterface $entityManager)
-    {
-        if (!property_exists($obj, 'subUrlRequestStatus')) {
-            throw new \Exception('Could not find property subUrlRequestStatus');
-        }
-
-        $sections = ['violations', 'passes', 'incomplete', 'inapplicable'];
-        $node_cats = ['any', 'all', 'none'];
-        $found_check_ids = [];
-        foreach ($sections as $section_name) {
-            if (!property_exists($obj->subUrlRequestStatus, $section_name)) {
-                continue;
-            }
-
-            $current_rules = $obj->subUrlRequestStatus->$section_name;
-            foreach ($current_rules as $current_rule) {
-                if (!property_exists($current_rule, 'nodes')) {
-                    continue;
-                }
-    
-                $nodes = $current_rule->nodes;
-    
-                if (!is_array($nodes) || 0 === count($nodes)) {
-                    continue;
-                }
-    
-                foreach ($nodes as $node) {
-                    foreach ($node_cats as $node_cat_name) {
-                        if (!property_exists($node, $node_cat_name)) {
-                            continue;
-                        }
-
-                        $node_cat = $node->$node_cat_name;
-
-                        if (!is_array($node_cat) || 0 === count($node_cat)) {
-                            continue;
-                        }
-
-                        foreach ($node_cat as $check) {
-                            if (!property_exists($check, 'id')) {
-                                throw new \Exception('Check is missing property: id');
-                            }
-
-                            if (in_array($check->id, $found_check_ids)) {
-                                continue;
-                            }
-
-                            $found_check_ids[] = $check->id;
-
-                            $existing_check_from_db = $accessibilityCheckRepository->findOneBy(['name' => $check->id]);
-                            if ($existing_check_from_db) {
-                                continue;
-                            }
-
-                            $new_check = new AccessibilityCheck();
-                            $new_check->setName($check->id);
-
-                            $entityManager->persist($new_check);
-                            //This should happen so rarely that we're going to flush immediately here, just in case two
-                            //spiders run at the same time
-                            $entityManager->flush();
-                        }
-
-                        // dump($node_cat);
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * @Route("/api/v1/scanner/a11y/send", name="api_scanner_a11y_submit", methods={"GET", "POST"},)
      */
@@ -124,7 +52,7 @@ class ApiBatchController extends AbstractController
         $logger->info(sprintf('Scanner %1$d dropping off URLs', $scanner->getId()));
 
         //Turn this on to read from a specific file in the dump folder
-        $debug_mode = true;
+        $debug_mode = false;
 
         if ($debug_mode) {
             $root_dir = $kernel->getProjectDir();
@@ -153,12 +81,12 @@ class ApiBatchController extends AbstractController
                 return JsonResponse::create(['error' => sprintf('Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),], Response::HTTP_EXPECTATION_FAILED);
             }
 
-            $results = $accessibilityReportHandler->process_v2($scanUrlJson);
+            $results = $accessibilityReportHandler->process_v3($scanUrlJson);
 
-            dump($results);
+            // dump($results);
         }
 
-        return $this->render('dump.twig', ['results' => $results]);
+        // return $this->render('dump.twig', ['results' => $results]);
 
 
         //TODO: Return something better
@@ -281,7 +209,7 @@ class ApiBatchController extends AbstractController
      */
     public function request_urls_a11y(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        return $this->get_urls_generic('findUrlsReadyForA11y', 2, $tokenStorage, $scanUrlRepository, $logger);
+        return $this->get_urls_generic('findUrlsReadyForA11y', 6, $tokenStorage, $scanUrlRepository, $logger);
     }
 
     /**

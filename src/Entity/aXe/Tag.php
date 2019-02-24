@@ -25,12 +25,6 @@ class Tag
      */
     private $name;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\aXe\Rule", mappedBy="tags")
-     * @ORM\JoinTable(name="axe_rules_tags")
-     */
-    private $rules;
-
     public function __construct()
     {
         $this->rules = new ArrayCollection();
@@ -49,34 +43,6 @@ class Tag
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Rule[]
-     */
-    public function getRules(): Collection
-    {
-        return $this->rules;
-    }
-
-    public function addRule(Rule $rule): self
-    {
-        if (!$this->rules->contains($rule)) {
-            $this->rules[] = $rule;
-            $rule->addTag($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRule(Rule $rule): self
-    {
-        if ($this->rules->contains($rule)) {
-            $this->rules->removeElement($rule);
-            $rule->removeTag($this);
-        }
 
         return $this;
     }

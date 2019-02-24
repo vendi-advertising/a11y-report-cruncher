@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\aXe\ScanResult;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -47,6 +50,11 @@ class ScanUrl
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $scanStatus;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\aXe\ScanResult", mappedBy="scanUrl", cascade={"persist", "remove"})
+     */
+    private $scanResult;
 
     public const SCAN_STATUS_READY = 'SCAN_STATUS_READY';
 
@@ -133,6 +141,23 @@ class ScanUrl
     public function setScanStatus(?string $scanStatus): self
     {
         $this->scanStatus = $scanStatus;
+
+        return $this;
+    }
+
+    public function getScanResult(): ?ScanResult
+    {
+        return $this->scanResult;
+    }
+
+    public function setScanResult(ScanResult $scanResult): self
+    {
+        $this->scanResult = $scanResult;
+
+        // set the owning side of the relation if necessary
+        if ($this !== $scanResult->getScanUrl()) {
+            $scanResult->setScanUrl($this);
+        }
 
         return $this;
     }

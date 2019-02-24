@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\aXe\Rule;
-use App\Repository\aXe\CheckRepository;
-use App\Repository\aXe\ResultTypeRepository;
-use App\Repository\aXe\RuleRepository;
+use App\Entity\aXe\RuleResultNode;
+use App\Entity\aXe\RuleResultNodeDetails\RuleResultNodeDetailBase;
+use App\Entity\aXe\RuleResults\RuleResultBase;
+use App\Entity\aXe\ScanResult;
+use App\Entity\ScanUrl;
 use App\Repository\aXe\TagRepository;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,26 +18,17 @@ class AccessibilityReportHandler
     private $scanUrlRepository;
     private $entityManager;
 
-    private $resultTypeRepository;
     private $tagRepository;
-    private $checkRepository;
-    private $ruleRepository;
 
     public function __construct(
         ScanUrlRepository $scanUrlRepository,
         EntityManagerInterface $entityManager,
-        ResultTypeRepository $resultTypeRepository,
-        TagRepository $tagRepository,
-        CheckRepository $checkRepository,
-        RuleRepository $ruleRepository
+        TagRepository $tagRepository
         ) {
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
 
-        $this->resultTypeRepository = $resultTypeRepository;
         $this->tagRepository = $tagRepository;
-        $this->checkRepository = $checkRepository;
-        $this->ruleRepository = $ruleRepository;
     }
 
     public function process_v2_tags_only($obj)
@@ -97,99 +89,7 @@ class AccessibilityReportHandler
         return $tags;
     }
 
-    protected function get_checks($obj, $node) : array
-    {
-        $all_checks = $this->process_v2_checks_only($obj);
-
-        $check_types = [
-            'any',
-            'all',
-            'none',
-        ];
-
-        $ret = [];
-        foreach ($check_types as $check_type_name) {
-            $check_things = $node->$check_type_name;
-            if (0===count($check_things)) {
-                continue;
-            }
-
-            foreach ($check_things as $check_thing) {
-                foreach ($all_checks as $check_obj) {
-                    if ($check_obj->getName() === $check_thing->id) {
-                        $ret[] = $check_obj;
-                    }
-                }
-            }
-        }
-
-        return $ret;
-    }
-
-    public function process_v2_checks_only($obj)
-    {
-        static $cache = [];
-        if (!array_key_exists($obj->scanUrlId, $cache)) {
-            $checks_as_strings = [];
-            $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
-            foreach ($result_type_names as $result_type_name) {
-                foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
-                    if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
-                        continue;
-                    }
-    
-                    $node = reset($rule_thing->nodes);
-    
-                    $check_types = [
-                        'any',
-                        'all',
-                        'none',
-                    ];
-                    foreach ($check_types as $check_type_name) {
-                        $check_things = $node->$check_type_name;
-                        if (0===count($check_things)) {
-                            continue;
-                        }
-    
-                        foreach ($check_things as $check_thing) {
-                            if (!array_key_exists($check_thing->id, $checks_as_strings)) {
-                                $checks_as_strings[$check_thing->id] = [
-                                    'impact' => $check_thing->impact,
-                                    'type' => $check_type_name,
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-    
-            ksort($checks_as_strings);
-            
-            $checks_as_objects = $this->checkRepository->findAll();
-            $dirty = false;
-            $existing_check_names = [];
-            foreach ($checks_as_objects as $check) {
-                $existing_check_names[] = $check->getName();
-            }
-    
-            foreach ($checks_as_strings as $check_name => $data) {
-                if (!in_array($check_name, $existing_check_names)) {
-                    $dirty = true;
-                    $this->checkRepository->get_or_create_one($check_name, $data);
-                }
-            }
-    
-            if ($dirty) {
-                $checks_as_objects = $this->checkRepository->findAll();
-            }
-
-            $cache[$obj->scanUrlId] = $checks_as_objects;
-        }
-
-        return $cache[$obj->scanUrlId];
-    }
-
-    public function process_v2($obj)
+    protected function sanity_check_obj_and_get_scan_url($obj) : ScanUrl
     {
         if (!property_exists($obj, 'subUrlRequestStatus')) {
             throw new \Exception('Could not find property subUrlRequestStatus');
@@ -204,45 +104,7 @@ class AccessibilityReportHandler
             throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
-        $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
-        foreach ($result_type_names as $result_type_name) {
-            // $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
-
-            if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
-                continue;
-            }
-
-            foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
-                if (!property_exists($rule_thing, 'nodes')) {
-                    throw new \Exception('Rule missing node collection');
-                }
-
-                if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
-                    continue;
-                }
-
-                $node = reset($rule_thing->nodes);
-
-                $rule = new Rule();
-                $rule->addTags($this->get_tags($obj, $rule_thing));
-                $rule->setImpact($rule_thing->impact);
-                $rule->setName($rule_thing->id);
-                $rule->setDescription($rule_thing->description);
-                $rule->setHelp($rule_thing->help);
-                $rule->addChecks($this->get_checks($obj, $node));
-
-                $real_rule = $this->ruleRepository->get_rule($rule);
-
-                if (!$real_rule) {
-                    $this->entityManager->persist($rule);
-                    $this->entityManager->flush();
-                    $real_rule = $rule;
-                }
-
-                //Work with $real_rule here
-            }
-        }
-        
+        return $scanUrl;
     }
 
     public function get_report_for_single_scan_url(int $scanUrlId)
@@ -277,5 +139,83 @@ class AccessibilityReportHandler
         // dd($query->getSql());
 
         return $query->getResult();
+    }
+
+    public function process_v3($obj)
+    {
+        $scanUrl = $this->sanity_check_obj_and_get_scan_url($obj);
+
+        $scan_result = new ScanResult();
+        $scan_result->setScanUrl($scanUrl);
+
+        $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
+        foreach ($result_type_names as $result_type_name) {
+            // $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
+
+            if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
+                continue;
+            }
+
+            foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
+                if (!property_exists($rule_thing, 'nodes')) {
+                    throw new \Exception('Rule missing node collection');
+                }
+
+                if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
+                    continue;
+                }
+
+                $rule_result = RuleResultBase::create_from_string($result_type_name);
+                $rule_result->setName($rule_thing->id);
+                $rule_result->setImpact($rule_thing->impact);
+                $rule_result->setDescription($rule_thing->description);
+                $rule_result->setHelp($rule_thing->help);
+                $rule_result->addTags($this->get_tags($obj, $rule_thing));
+
+                foreach($rule_thing->nodes as $node){
+                    $rule_result_node = new RuleResultNode();
+                    $rule_result_node->setHtml($node->html);
+                    $rule_result_node->setTarget($node->target);
+                    if(property_exists($node, 'failureSummary')){
+                        $rule_result_node->setFailureSummary($node->failureSummary);
+                    }
+
+                    $detail_types = ['any', 'all', 'none'];
+                    foreach($detail_types as $detail_type){
+                        if(!property_exists($node, $detail_type)){
+                            continue;
+                        }
+
+                        foreach($node->$detail_type as $d){
+                            $detail = RuleResultNodeDetailBase::create_from_string($detail_type);
+                            $detail->setName($d->id);
+                            if($d->data){
+                                $g = json_decode(json_encode($d->data), true);
+                                if(!is_array($g)){
+                                    $g = [$g];
+                                }
+                                $detail->setData($g);
+                            }
+                            $detail->setRelatedNodes($d->relatedNodes);
+                            $detail->setImpact($d->impact);
+                            $detail->setMessage($d->message);
+                            $this->entityManager->persist($detail);
+
+                            $rule_result_node->addDetail($detail);
+                        }
+
+                        $this->entityManager->persist($rule_result_node);
+                    }
+
+                    $rule_result->addNode($rule_result_node);
+                    $this->entityManager->persist($rule_result);
+                }
+
+                $scan_result->addResult($rule_result);
+            }
+        }
+
+        $this->entityManager->persist($scan_result);
+        $this->entityManager->flush();
     }
 }
