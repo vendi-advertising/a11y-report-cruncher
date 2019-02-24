@@ -6,5 +6,4 @@ namespace App\Service;
 
 class AccessibilityReportHandlerInterface
 {
-    
 }

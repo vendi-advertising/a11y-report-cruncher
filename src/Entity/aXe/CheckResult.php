@@ -1,8 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity\aXe;
 
-use App\Entity\aXe\Check;
 use Doctrine\ORM\Mapping as ORM;
 
 /**

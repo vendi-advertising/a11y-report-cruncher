@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Repository;
 
-use Psr\SimpleCache\CacheInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 abstract class SimpleCacheRepository extends ServiceEntityRepository
@@ -19,7 +19,7 @@ abstract class SimpleCacheRepository extends ServiceEntityRepository
     final public function get_or_create_many(array $names) : array
     {
         $ret = [];
-        foreach($names as $name){
+        foreach ($names as $name) {
             $ret[] = $this->get_or_create_one($name);
         }
         return $ret;
@@ -35,14 +35,14 @@ abstract class SimpleCacheRepository extends ServiceEntityRepository
         static $cache_by_key = [];
 
         //Check the static cache first
-        if(array_key_exists($cache_key, $cache_by_key)){
+        if (array_key_exists($cache_key, $cache_by_key)) {
             $item = $cache_by_key[$cache_key];
             return $item;
         }
 
-        if(method_exists($this, 'findOneByNameCached')){
+        if (method_exists($this, 'findOneByNameCached')) {
             $item = $this->findOneByNameCached($name);
-            if($item){
+            if ($item) {
                 return $item;
             }
         }
@@ -58,7 +58,7 @@ abstract class SimpleCacheRepository extends ServiceEntityRepository
 
         //Check the database third
         $existing = $this->findOneBy(['name' => $name]);
-        if($existing){
+        if ($existing) {
             $cache_by_key[$cache_key] = $existing;
             // $this->cache->set($cache_key, $existing);
             return $existing;

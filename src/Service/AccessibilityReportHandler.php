@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\aXe\Rule;
-use App\Repository\aXe\ImpactRepository;
-use App\Repository\aXe\ResultTypeRepository;
-use App\Repository\aXe\TagRepository;
 use App\Repository\aXe\CheckRepository;
+use App\Repository\aXe\ResultTypeRepository;
 use App\Repository\aXe\RuleRepository;
+use App\Repository\aXe\TagRepository;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 
 class AccessibilityReportHandler
 {
@@ -25,14 +23,13 @@ class AccessibilityReportHandler
     private $ruleRepository;
 
     public function __construct(
-            ScanUrlRepository $scanUrlRepository,
-            EntityManagerInterface $entityManager,
-            ResultTypeRepository $resultTypeRepository,
-            TagRepository $tagRepository,
-            CheckRepository $checkRepository,
-            RuleRepository $ruleRepository
-        )
-    {
+        ScanUrlRepository $scanUrlRepository,
+        EntityManagerInterface $entityManager,
+        ResultTypeRepository $resultTypeRepository,
+        TagRepository $tagRepository,
+        CheckRepository $checkRepository,
+        RuleRepository $ruleRepository
+        ) {
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
 
@@ -45,12 +42,12 @@ class AccessibilityReportHandler
     public function process_v2_tags_only($obj)
     {
         static $cache = [];
-        if(!array_key_exists($obj->scanUrlId, $cache)){
+        if (!array_key_exists($obj->scanUrlId, $cache)) {
             $tags_as_strings = [];
             $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
-            foreach($result_type_names as $result_type_name){
-                foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
-                    if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+            foreach ($result_type_names as $result_type_name) {
+                foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
+                    if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
                         continue;
                     }
 
@@ -64,18 +61,18 @@ class AccessibilityReportHandler
             $dirty = false;
 
             $existing_tag_names = [];
-            foreach($tags_as_objects as $tag){
+            foreach ($tags_as_objects as $tag) {
                 $existing_tag_names[] = $tag->getName();
             }
 
-            foreach($tags_as_strings as $tag_name){
-                if(!in_array($tag_name, $existing_tag_names)){
+            foreach ($tags_as_strings as $tag_name) {
+                if (!in_array($tag_name, $existing_tag_names)) {
                     $dirty = true;
                     $this->tagRepository->get_or_create_one($tag_name);
                 }
             }
 
-            if($dirty){
+            if ($dirty) {
                 $tags_as_objects = $this->tagRepository->findAll();
             }
             $cache[$obj->scanUrlId] = $tags_as_objects;
@@ -88,9 +85,9 @@ class AccessibilityReportHandler
     {
         $all_tags = $this->process_v2_tags_only($obj);
         $tags = [];
-        foreach($rule_thing->tags as $tag){
-            foreach($all_tags as $tag_obj){
-                if($tag === $tag_obj->getName()){
+        foreach ($rule_thing->tags as $tag) {
+            foreach ($all_tags as $tag_obj) {
+                if ($tag === $tag_obj->getName()) {
                     $tags[] = $tag_obj;
                     break;
                 }
@@ -111,15 +108,15 @@ class AccessibilityReportHandler
         ];
 
         $ret = [];
-        foreach($check_types as $check_type_name){
+        foreach ($check_types as $check_type_name) {
             $check_things = $node->$check_type_name;
-            if(0===count($check_things)){
+            if (0===count($check_things)) {
                 continue;
             }
 
-            foreach($check_things as $check_thing){
-                foreach($all_checks as $check_obj){
-                    if($check_obj->getName() === $check_thing->id){
+            foreach ($check_things as $check_thing) {
+                foreach ($all_checks as $check_obj) {
+                    if ($check_obj->getName() === $check_thing->id) {
                         $ret[] = $check_obj;
                     }
                 }
@@ -132,13 +129,12 @@ class AccessibilityReportHandler
     public function process_v2_checks_only($obj)
     {
         static $cache = [];
-        if(!array_key_exists($obj->scanUrlId, $cache)){
-
+        if (!array_key_exists($obj->scanUrlId, $cache)) {
             $checks_as_strings = [];
             $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
-            foreach($result_type_names as $result_type_name){
-                foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
-                    if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+            foreach ($result_type_names as $result_type_name) {
+                foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
+                    if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
                         continue;
                     }
     
@@ -149,14 +145,14 @@ class AccessibilityReportHandler
                         'all',
                         'none',
                     ];
-                    foreach($check_types as $check_type_name){
+                    foreach ($check_types as $check_type_name) {
                         $check_things = $node->$check_type_name;
-                        if(0===count($check_things)){
+                        if (0===count($check_things)) {
                             continue;
                         }
     
-                        foreach($check_things as $check_thing){
-                            if(!array_key_exists($check_thing->id, $checks_as_strings)){
+                        foreach ($check_things as $check_thing) {
+                            if (!array_key_exists($check_thing->id, $checks_as_strings)) {
                                 $checks_as_strings[$check_thing->id] = [
                                     'impact' => $check_thing->impact,
                                     'type' => $check_type_name,
@@ -172,18 +168,18 @@ class AccessibilityReportHandler
             $checks_as_objects = $this->checkRepository->findAll();
             $dirty = false;
             $existing_check_names = [];
-            foreach($checks_as_objects as $check){
+            foreach ($checks_as_objects as $check) {
                 $existing_check_names[] = $check->getName();
             }
     
-            foreach($checks_as_strings as $check_name => $data){
-                if(!in_array($check_name, $existing_check_names)){
+            foreach ($checks_as_strings as $check_name => $data) {
+                if (!in_array($check_name, $existing_check_names)) {
                     $dirty = true;
                     $this->checkRepository->get_or_create_one($check_name, $data);
                 }
             }
     
-            if($dirty){
+            if ($dirty) {
                 $checks_as_objects = $this->checkRepository->findAll();
             }
 
@@ -191,41 +187,39 @@ class AccessibilityReportHandler
         }
 
         return $cache[$obj->scanUrlId];
-
     }
 
     public function process_v2($obj)
     {
-        if(!property_exists($obj, 'subUrlRequestStatus')){
+        if (!property_exists($obj, 'subUrlRequestStatus')) {
             throw new \Exception('Could not find property subUrlRequestStatus');
         }
 
-        if(!property_exists($obj, 'scanUrlId')){
+        if (!property_exists($obj, 'scanUrlId')) {
             throw new \Exception('Could not find property scanUrlId');
         }
 
         $scanUrl = $this->scanUrlRepository->find((int) $obj->scanUrlId);
-        if(!$scanUrl){
+        if (!$scanUrl) {
             throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
         $rules = [];
 
         $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
-        foreach($result_type_names as $result_type_name){
+        foreach ($result_type_names as $result_type_name) {
             $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
 
-            if(!property_exists($obj->subUrlRequestStatus, $result_type_name)){
+            if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
                 continue;
             }
 
-            foreach($obj->subUrlRequestStatus->$result_type_name as $rule_thing){
-                
-                if(!property_exists($rule_thing, 'nodes')){
+            foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
+                if (!property_exists($rule_thing, 'nodes')) {
                     throw new \Exception('Rule missing node collection');
                 }
 
-                if(!$rule_thing->nodes || 0 === count($rule_thing->nodes)){
+                if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
                     continue;
                 }
 
@@ -241,7 +235,7 @@ class AccessibilityReportHandler
 
                 $real_rule = $this->ruleRepository->get_rule($rule);
 
-                if(!$real_rule){
+                if (!$real_rule) {
                     $this->entityManager->persist($rule);
                     $this->entityManager->flush();
                     $real_rule = $rule;
@@ -257,7 +251,7 @@ class AccessibilityReportHandler
     public function get_report_for_single_scan_url(int $scanUrlId)
     {
         $scanUrl = $this->scanUrlRepository->find($scanUrlId);
-        if(!$scanUrl){
+        if (!$scanUrl) {
             throw new \Exception('Could not find ScanUrl object by supplied Id: ' . $obj->scanUrlId);
         }
 
@@ -268,7 +262,8 @@ class AccessibilityReportHandler
                 ->leftJoin('acr.accessibilityCheckVersion', 'acv')
                 ->leftJoin('acv.accessibilityCheck', 'ac')
                 ->innerJoin('acr.tags', 'tags')
-                ->select('
+                ->select(
+                    '
                             su.id,
                             su.url,
                             acv.message,
@@ -282,8 +277,8 @@ class AccessibilityReportHandler
                 ->getQuery()
             ;
 
-            // dd($query->getSql());
+        // dd($query->getSql());
 
-            return $query->getResult();
+        return $query->getResult();
     }
 }

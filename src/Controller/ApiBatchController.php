@@ -42,56 +42,55 @@ class ApiBatchController extends AbstractController
 
     protected function build_a11y_checks($obj, AccessibilityCheckRepository $accessibilityCheckRepository, EntityManagerInterface $entityManager)
     {
-        if(!property_exists($obj, 'subUrlRequestStatus')){
+        if (!property_exists($obj, 'subUrlRequestStatus')) {
             throw new \Exception('Could not find property subUrlRequestStatus');
         }
 
         $sections = ['violations', 'passes', 'incomplete', 'inapplicable'];
         $node_cats = ['any', 'all', 'none'];
         $found_check_ids = [];
-        foreach($sections as $section_name){
-            if(!property_exists($obj->subUrlRequestStatus, $section_name)){
+        foreach ($sections as $section_name) {
+            if (!property_exists($obj->subUrlRequestStatus, $section_name)) {
                 continue;
             }
 
             $current_rules = $obj->subUrlRequestStatus->$section_name;
-            foreach($current_rules as $current_rule){
-    
-                if(!property_exists($current_rule, 'nodes')){
+            foreach ($current_rules as $current_rule) {
+                if (!property_exists($current_rule, 'nodes')) {
                     continue;
                 }
     
                 $nodes = $current_rule->nodes;
     
-                if(!is_array($nodes) || 0 === count($nodes)){
+                if (!is_array($nodes) || 0 === count($nodes)) {
                     continue;
                 }
     
-                foreach($nodes as $node){
-                    foreach($node_cats as $node_cat_name){
-                        if(!property_exists($node, $node_cat_name)){
+                foreach ($nodes as $node) {
+                    foreach ($node_cats as $node_cat_name) {
+                        if (!property_exists($node, $node_cat_name)) {
                             continue;
                         }
 
                         $node_cat = $node->$node_cat_name;
 
-                        if(!is_array($node_cat) || 0 === count($node_cat)){
+                        if (!is_array($node_cat) || 0 === count($node_cat)) {
                             continue;
                         }
 
-                        foreach($node_cat as $check){
-                            if(!property_exists($check, 'id')){
+                        foreach ($node_cat as $check) {
+                            if (!property_exists($check, 'id')) {
                                 throw new \Exception('Check is missing property: id');
                             }
 
-                            if(in_array($check->id,$found_check_ids)){
+                            if (in_array($check->id, $found_check_ids)) {
                                 continue;
                             }
 
                             $found_check_ids[] = $check->id;
 
                             $existing_check_from_db = $accessibilityCheckRepository->findOneBy(['name' => $check->id]);
-                            if($existing_check_from_db){
+                            if ($existing_check_from_db) {
                                 continue;
                             }
 
@@ -102,16 +101,12 @@ class ApiBatchController extends AbstractController
                             //This should happen so rarely that we're going to flush immediately here, just in case two
                             //spiders run at the same time
                             $entityManager->flush();
-
                         }
 
                         // dump($node_cat);
                     }
                 }
-
-
             }
-           
         }
     }
 
@@ -145,24 +140,22 @@ class ApiBatchController extends AbstractController
         $parsed = json_decode($body);
 
         if (!is_array($parsed)) {
-            return JsonResponse::create(['error' => 'Non array',],Response::HTTP_BAD_REQUEST);
+            return JsonResponse::create(['error' => 'Non array',], Response::HTTP_BAD_REQUEST);
         }
 
         if (0 === count($parsed)) {
-            return JsonResponse::create(['error' => 'Empty array',],Response::HTTP_EXPECTATION_FAILED);
+            return JsonResponse::create(['error' => 'Empty array',], Response::HTTP_EXPECTATION_FAILED);
         }
 
         foreach ($parsed as $scanUrlJson) {
-
             $scanUrl = $scanUrlRepository->find($scanUrlJson->scanUrlId);
             if (!$scanUrl) {
-                return JsonResponse::create(['error' => sprintf('Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),],Response::HTTP_EXPECTATION_FAILED);
+                return JsonResponse::create(['error' => sprintf('Could not find Scan Url with id [%1$s]', $scanUrlJson->scanUrlId),], Response::HTTP_EXPECTATION_FAILED);
             }
 
             $results = $accessibilityReportHandler->process_v2($scanUrlJson);
 
             dump($results);
-
         }
 
         return $this->render('dump.twig', ['results' => $results]);
@@ -301,7 +294,6 @@ class ApiBatchController extends AbstractController
 
     protected function get_urls_generic(string $func, int $count, TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger) :JsonResponse
     {
-
         $scanner = $this->get_scanner_from_token($tokenStorage);
 
         if (!$scanner) {

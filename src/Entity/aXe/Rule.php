@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity\aXe;
 
@@ -105,7 +105,7 @@ class Rule
 
     public function addTags(Iterable $tags) : self
     {
-        foreach($tags as $tag){
+        foreach ($tags as $tag) {
             $this->addTag($tag);
         }
 
@@ -150,8 +150,7 @@ class Rule
         $checks = $this->getChecks();
 
         $names = array_map(
-            function($check)
-            {
+            function ($check) {
                 return $check->getName();
             },
             $checks->toArray()
@@ -196,7 +195,7 @@ class Rule
 
     public function addChecks(Iterable $checks) : self
     {
-        foreach($checks as $check){
+        foreach ($checks as $check) {
             $this->addCheck($check);
         }
 

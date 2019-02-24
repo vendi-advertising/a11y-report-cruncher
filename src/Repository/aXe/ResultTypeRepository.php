@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Repository\aXe;
 
 use App\Entity\aXe\ResultType;
-use Psr\SimpleCache\CacheInterface;
 use App\Repository\SimpleCacheRepository;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**

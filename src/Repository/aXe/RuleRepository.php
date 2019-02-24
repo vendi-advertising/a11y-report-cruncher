@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Repository\aXe;
 
@@ -33,21 +33,21 @@ class RuleRepository extends ServiceEntityRepository
 
         $result = $query->getResult();
 
-        if(!$result){
+        if (!$result) {
             return null;
         }
 
         $maybe_rule_check_names = $maybe_rule->get_check_names_joined();
 
-        foreach($result as $parts){
+        foreach ($result as $parts) {
             $real_rule = $parts['real_rule'];
             $check_names = $parts['check_names'];
 
-            if(!$real_rule instanceOf Rule){
+            if (!$real_rule instanceof Rule) {
                 throw new \Exception('Non-rule returned from get_rule');
             }
 
-            if($maybe_rule_check_names === $check_names){
+            if ($maybe_rule_check_names === $check_names) {
                 return $real_rule;
             }
         }
