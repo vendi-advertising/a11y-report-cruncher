@@ -18,8 +18,7 @@ class Result
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\ResultType")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="text", nullable=true)
      */
     private $resultType;
 
