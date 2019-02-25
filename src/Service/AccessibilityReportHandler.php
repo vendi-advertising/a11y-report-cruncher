@@ -9,6 +9,7 @@ use App\Entity\aXe\RuleResultNodeDetails\RuleResultNodeDetailBase;
 use App\Entity\aXe\RuleResults\RuleResultBase;
 use App\Entity\aXe\ScanResult;
 use App\Entity\ScanUrl;
+use App\Repository\aXe\SharedStringRepository;
 use App\Repository\aXe\TagRepository;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,12 +24,14 @@ class AccessibilityReportHandler
     public function __construct(
         ScanUrlRepository $scanUrlRepository,
         EntityManagerInterface $entityManager,
-        TagRepository $tagRepository
+        TagRepository $tagRepository,
+        SharedStringRepository $sharedStringRepository
         ) {
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
 
         $this->tagRepository = $tagRepository;
+        $this->sharedStringRepository = $sharedStringRepository;
     }
 
     public function process_v2_tags_only($obj)
@@ -141,16 +144,45 @@ class AccessibilityReportHandler
         return $query->getResult();
     }
 
+    private function build_shared_string_cache($obj)
+    {
+        $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
+        foreach ($result_type_names as $result_type_name) {
+
+            if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
+                continue;
+            }
+
+            foreach ($obj->subUrlRequestStatus->$result_type_name as $rule_thing) {
+                if (!property_exists($rule_thing, 'nodes')) {
+                    throw new \Exception('Rule missing node collection');
+                }
+
+                if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
+                    continue;
+                }
+                foreach($rule_thing->nodes as $node){
+                    if($node->html){
+                        $this->sharedStringRepository->get_or_create_one($node->html, false);
+                    }
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+    }
+
     public function process_v3($obj)
     {
         $scanUrl = $this->sanity_check_obj_and_get_scan_url($obj);
+
+        $this->build_shared_string_cache($obj);
 
         $scan_result = new ScanResult();
         $scan_result->setScanUrl($scanUrl);
 
         $result_type_names = ['violations', 'passes', 'incomplete', 'inapplicable'];
         foreach ($result_type_names as $result_type_name) {
-            // $result_type = $this->resultTypeRepository->get_or_create_one($result_type_name);
 
             if (!property_exists($obj->subUrlRequestStatus, $result_type_name)) {
                 continue;
@@ -174,7 +206,12 @@ class AccessibilityReportHandler
 
                 foreach($rule_thing->nodes as $node){
                     $rule_result_node = new RuleResultNode();
-                    $rule_result_node->setHtml($node->html);
+
+                    if($node->html){
+                        $rule_result_node->setHtmlSharedString($this->sharedStringRepository->get_or_create_one($node->html));
+                    }
+                    
+                    // $rule_result_node->setHtml($node->html);
                     $rule_result_node->setTarget($node->target);
                     if(property_exists($node, 'failureSummary')){
                         $rule_result_node->setFailureSummary($node->failureSummary);

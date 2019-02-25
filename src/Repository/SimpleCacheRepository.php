@@ -47,16 +47,7 @@ abstract class SimpleCacheRepository extends ServiceEntityRepository
             }
         }
 
-        // //Check the PSR cache second
-        // if ($this->cache->has($cache_key)) {
-        //     $item = $this->cache->get($cache_key);
-        //     // dd($item);
-        //     // return $item;
-        //     // $cache_by_key[$cache_key] = $item;
-        //     // return $this->find((int)$item->getId());
-        // }
-
-        //Check the database third
+        //Check the database next
         $existing = $this->findOneBy(['name' => $name]);
         if ($existing) {
             $cache_by_key[$cache_key] = $existing;

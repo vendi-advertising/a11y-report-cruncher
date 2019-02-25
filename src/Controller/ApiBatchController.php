@@ -57,7 +57,7 @@ class ApiBatchController extends AbstractController
         if ($debug_mode) {
             $root_dir = $kernel->getProjectDir();
             $dump_folder = Path::join($root_dir, 'var', 'post_dumps');
-            $dump_file = Path::join($dump_folder, 'dump_a11y_02-16-2019_1200pm.1550318439.json');
+            $dump_file = Path::join($dump_folder, 'dump_a11y_02-25-2019_0359pm.1551110365.json');
             $body = file_get_contents($dump_file);
         } else {
             //If we're in debug mode, we're probably using the browser so we don't want to log it
@@ -209,7 +209,7 @@ class ApiBatchController extends AbstractController
      */
     public function request_urls_a11y(TokenStorageInterface $tokenStorage, ScanUrlRepository $scanUrlRepository, LoggerInterface $logger)
     {
-        return $this->get_urls_generic('findUrlsReadyForA11y', 6, $tokenStorage, $scanUrlRepository, $logger);
+        return $this->get_urls_generic('findUrlsReadyForA11y', 5, $tokenStorage, $scanUrlRepository, $logger);
     }
 
     /**

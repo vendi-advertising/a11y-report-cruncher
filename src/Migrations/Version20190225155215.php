@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190224132148 extends AbstractMigration
+final class Version20190225155215 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -22,11 +22,12 @@ final class Version20190224132148 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('CREATE TABLE axe_result_node (id INT AUTO_INCREMENT NOT NULL, rule_result_base_id INT NOT NULL, impact VARCHAR(255) DEFAULT NULL, html LONGTEXT DEFAULT NULL, target JSON DEFAULT NULL, failure_summary LONGTEXT DEFAULT NULL, INDEX IDX_D6D0DE485EF1F704 (rule_result_base_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE axe_result_node (id INT AUTO_INCREMENT NOT NULL, rule_result_base_id INT NOT NULL, html_shared_string_id INT DEFAULT NULL, impact VARCHAR(255) DEFAULT NULL, html LONGTEXT DEFAULT NULL, target JSON DEFAULT NULL, failure_summary LONGTEXT DEFAULT NULL, INDEX IDX_D6D0DE485EF1F704 (rule_result_base_id), INDEX IDX_D6D0DE48A9BB8F96 (html_shared_string_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE axe_result_node_detail (id INT AUTO_INCREMENT NOT NULL, rule_result_node_id INT NOT NULL, name VARCHAR(255) NOT NULL, data JSON DEFAULT NULL, related_nodes JSON DEFAULT NULL, impact VARCHAR(255) DEFAULT NULL, message VARCHAR(1024) DEFAULT NULL, discr VARCHAR(255) NOT NULL, INDEX IDX_22F474D719BB792 (rule_result_node_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE axe_result (id INT AUTO_INCREMENT NOT NULL, scan_result_id INT NOT NULL, impact VARCHAR(255) DEFAULT NULL, description VARCHAR(1024) DEFAULT NULL, help VARCHAR(1024) DEFAULT NULL, name VARCHAR(255) NOT NULL, discr VARCHAR(255) NOT NULL, INDEX IDX_79EA31C4EC68BBB8 (scan_result_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE axe_results_tags (rule_result_base_id INT NOT NULL, tag_id INT NOT NULL, INDEX IDX_3C15F2FB5EF1F704 (rule_result_base_id), INDEX IDX_3C15F2FBBAD26311 (tag_id), PRIMARY KEY(rule_result_base_id, tag_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE scan_result (id INT AUTO_INCREMENT NOT NULL, scan_url_id INT NOT NULL, UNIQUE INDEX UNIQ_CFDBE4ED5D7EFF19 (scan_url_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE shared_string (id INT AUTO_INCREMENT NOT NULL, value LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE axe_tag (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE client (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, date_time_created DATETIME NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE property (id INT AUTO_INCREMENT NOT NULL, client_id INT NOT NULL, root_url VARCHAR(2048) NOT NULL, date_time_created DATETIME NOT NULL, name VARCHAR(1024) NOT NULL, INDEX IDX_8BF21CDE19EB6921 (client_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
@@ -36,6 +37,7 @@ final class Version20190224132148 extends AbstractMigration
         $this->addSql('CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, date_time_created DATETIME NOT NULL, UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE user_client (user_id INT NOT NULL, client_id INT NOT NULL, INDEX IDX_A2161F68A76ED395 (user_id), INDEX IDX_A2161F6819EB6921 (client_id), PRIMARY KEY(user_id, client_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('ALTER TABLE axe_result_node ADD CONSTRAINT FK_D6D0DE485EF1F704 FOREIGN KEY (rule_result_base_id) REFERENCES axe_result (id)');
+        $this->addSql('ALTER TABLE axe_result_node ADD CONSTRAINT FK_D6D0DE48A9BB8F96 FOREIGN KEY (html_shared_string_id) REFERENCES shared_string (id)');
         $this->addSql('ALTER TABLE axe_result_node_detail ADD CONSTRAINT FK_22F474D719BB792 FOREIGN KEY (rule_result_node_id) REFERENCES axe_result_node (id)');
         $this->addSql('ALTER TABLE axe_result ADD CONSTRAINT FK_79EA31C4EC68BBB8 FOREIGN KEY (scan_result_id) REFERENCES scan_result (id)');
         $this->addSql('ALTER TABLE axe_results_tags ADD CONSTRAINT FK_3C15F2FB5EF1F704 FOREIGN KEY (rule_result_base_id) REFERENCES axe_result (id) ON DELETE CASCADE');
@@ -57,6 +59,7 @@ final class Version20190224132148 extends AbstractMigration
         $this->addSql('ALTER TABLE axe_result_node DROP FOREIGN KEY FK_D6D0DE485EF1F704');
         $this->addSql('ALTER TABLE axe_results_tags DROP FOREIGN KEY FK_3C15F2FB5EF1F704');
         $this->addSql('ALTER TABLE axe_result DROP FOREIGN KEY FK_79EA31C4EC68BBB8');
+        $this->addSql('ALTER TABLE axe_result_node DROP FOREIGN KEY FK_D6D0DE48A9BB8F96');
         $this->addSql('ALTER TABLE axe_results_tags DROP FOREIGN KEY FK_3C15F2FBBAD26311');
         $this->addSql('ALTER TABLE property DROP FOREIGN KEY FK_8BF21CDE19EB6921');
         $this->addSql('ALTER TABLE user_client DROP FOREIGN KEY FK_A2161F6819EB6921');
@@ -69,6 +72,7 @@ final class Version20190224132148 extends AbstractMigration
         $this->addSql('DROP TABLE axe_result');
         $this->addSql('DROP TABLE axe_results_tags');
         $this->addSql('DROP TABLE scan_result');
+        $this->addSql('DROP TABLE shared_string');
         $this->addSql('DROP TABLE axe_tag');
         $this->addSql('DROP TABLE client');
         $this->addSql('DROP TABLE property');

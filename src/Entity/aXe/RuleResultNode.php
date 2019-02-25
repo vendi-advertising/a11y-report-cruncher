@@ -52,6 +52,11 @@ class RuleResultNode
      */
     private $ruleResultBase;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\SharedString")
+     */
+    private $htmlSharedString;
+
     public function __construct()
     {
         $this->details = new ArrayCollection();
@@ -149,6 +154,18 @@ class RuleResultNode
     public function setRuleResultBase(?RuleResultBase $ruleResultBase): self
     {
         $this->ruleResultBase = $ruleResultBase;
+
+        return $this;
+    }
+
+    public function getHtmlSharedString(): ?SharedString
+    {
+        return $this->htmlSharedString;
+    }
+
+    public function setHtmlSharedString(?SharedString $htmlSharedString): self
+    {
+        $this->htmlSharedString = $htmlSharedString;
 
         return $this;
     }
