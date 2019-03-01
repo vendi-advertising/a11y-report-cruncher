@@ -41,5 +41,6 @@ security:
     access_control:
         - { path: ^/home,  roles: ROLE_GLOBAL_ADMIN }
         - { path: ^/admin, roles: ROLE_GLOBAL_ADMIN }
+        - { path: ^/client, roles: ROLE_GLOBAL_ADMIN }
         - { path: ^/api,   roles: [ROLE_GLOBAL_ADMIN, ROLE_API]  }
         # - { path: ^/profile, roles: ROLE_USER }
