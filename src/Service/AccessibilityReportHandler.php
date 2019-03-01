@@ -162,8 +162,12 @@ class AccessibilityReportHandler
                     continue;
                 }
 
-                $this->sharedStringRepository->get_or_create_one($rule_thing->description, false);
-                $this->sharedStringRepository->get_or_create_one($rule_thing->help, false);
+                if($rule_thing->description){
+                    $this->sharedStringRepository->get_or_create_one($rule_thing->description, false);
+                }
+                if($rule_thing->help){
+                    $this->sharedStringRepository->get_or_create_one($rule_thing->help, false);
+                }
 
                 foreach($rule_thing->nodes as $node){
                     if($node->html){
@@ -177,7 +181,9 @@ class AccessibilityReportHandler
                         }
 
                         foreach($node->$detail_type as $d){
-                            $this->sharedStringRepository->get_or_create_one($d->message, false);
+                            if($d->message){
+                                $this->sharedStringRepository->get_or_create_one($d->message, false);   
+                            }
                         }
                     }
                 }
@@ -250,7 +256,7 @@ class AccessibilityReportHandler
                             }
                             $detail->setRelatedNodes($d->relatedNodes);
                             $detail->setImpact($d->impact);
-                            $detail->setMessage($this->sharedStringRepository->get_or_create_one($d->message));
+                            $detail->setMessageSharedString($this->sharedStringRepository->get_or_create_one($d->message));
                             $this->entityManager->persist($detail);
 
                             $rule_result_node->addDetail($detail);

@@ -19,8 +19,12 @@ class SharedStringRepository extends ServiceEntityRepository
         parent::__construct($registry, SharedString::class);
     }
 
-    final public function get_or_create_one(string $value, bool $flush = true)
+    final public function get_or_create_one(?string $value, bool $flush = true)
     {
+        if(!$value){
+            return null;
+        }
+        
         $cache_prefix = \mb_strtolower(\str_replace('\\', '_', $this->getClassName()));
         $cache_version = 'v2';
         $cache_key = hash('sha256', "{$cache_prefix}.{$cache_version}.{$value}");
