@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\aXe\RuleResultNodeDetails;
 
 use App\Entity\AXe\RuleResultNode;
+use App\Entity\aXe\SharedString;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -44,15 +45,15 @@ abstract class RuleResultNodeDetailBase
     private $impact;
 
     /**
-     * @ORM\Column(type="string", length=1024, nullable=true)
-     */
-    private $message;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\AXe\RuleResultNode", inversedBy="details")
      * @ORM\JoinColumn(nullable=false)
      */
     private $ruleResultNode;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\SharedString")
+     */
+    private $messageSharedString;
 
     public function getId(): ?int
     {
@@ -107,18 +108,6 @@ abstract class RuleResultNodeDetailBase
         return $this;
     }
 
-    public function getMessage(): ?string
-    {
-        return $this->message;
-    }
-
-    public function setMessage(?string $message): self
-    {
-        $this->message = $message;
-
-        return $this;
-    }
-
     public static function create_from_string(string $string) : self
     {
         switch($string){
@@ -156,6 +145,18 @@ abstract class RuleResultNodeDetailBase
     public function setRuleResultNode(?RuleResultNode $ruleResultNode): self
     {
         $this->ruleResultNode = $ruleResultNode;
+
+        return $this;
+    }
+
+    public function getMessageSharedString(): ?SharedString
+    {
+        return $this->messageSharedString;
+    }
+
+    public function setMessageSharedString(?SharedString $messageSharedString): self
+    {
+        $this->messageSharedString = $messageSharedString;
 
         return $this;
     }

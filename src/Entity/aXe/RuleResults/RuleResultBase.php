@@ -6,6 +6,7 @@ namespace App\Entity\aXe\RuleResults;
 
 use App\Entity\AXe\ScanResult;
 use App\Entity\aXe\RuleResultNode;
+use App\Entity\aXe\SharedString;
 use App\Entity\aXe\Tag;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -39,16 +40,6 @@ abstract class RuleResultBase
     private $tags;
 
     /**
-     * @ORM\Column(type="string", length=1024, nullable=true)
-     */
-    private $description;
-
-    /**
-     * @ORM\Column(type="string", length=1024, nullable=true)
-     */
-    private $help;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $name;
@@ -63,6 +54,21 @@ abstract class RuleResultBase
      * @ORM\JoinColumn(nullable=false)
      */
     private $scanResult;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\SharedString")
+     */
+    private $messageSharedString;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\SharedString")
+     */
+    private $descriptionSharedString;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\aXe\SharedString")
+     */
+    private $helpSharedString;
 
     public function __construct()
     {
@@ -233,6 +239,42 @@ abstract class RuleResultBase
     public function setScanResult(?ScanResult $scanResult): self
     {
         $this->scanResult = $scanResult;
+
+        return $this;
+    }
+
+    public function getMessageSharedString(): ?SharedString
+    {
+        return $this->messageSharedString;
+    }
+
+    public function setMessageSharedString(?SharedString $messageSharedString): self
+    {
+        $this->messageSharedString = $messageSharedString;
+
+        return $this;
+    }
+
+    public function getDescriptionSharedString(): ?SharedString
+    {
+        return $this->descriptionSharedString;
+    }
+
+    public function setDescriptionSharedString(?SharedString $descriptionSharedString): self
+    {
+        $this->descriptionSharedString = $descriptionSharedString;
+
+        return $this;
+    }
+
+    public function getHelpSharedString(): ?SharedString
+    {
+        return $this->helpSharedString;
+    }
+
+    public function setHelpSharedString(?SharedString $helpSharedString): self
+    {
+        $this->helpSharedString = $helpSharedString;
 
         return $this;
     }

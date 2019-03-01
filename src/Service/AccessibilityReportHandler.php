@@ -161,9 +161,24 @@ class AccessibilityReportHandler
                 if (!$rule_thing->nodes || 0 === count($rule_thing->nodes)) {
                     continue;
                 }
+
+                $this->sharedStringRepository->get_or_create_one($rule_thing->description, false);
+                $this->sharedStringRepository->get_or_create_one($rule_thing->help, false);
+
                 foreach($rule_thing->nodes as $node){
                     if($node->html){
                         $this->sharedStringRepository->get_or_create_one($node->html, false);
+                    }
+
+                    $detail_types = ['any', 'all', 'none'];
+                    foreach($detail_types as $detail_type){
+                        if(!property_exists($node, $detail_type)){
+                            continue;
+                        }
+
+                        foreach($node->$detail_type as $d){
+                            $this->sharedStringRepository->get_or_create_one($d->message, false);
+                        }
                     }
                 }
             }
@@ -200,8 +215,8 @@ class AccessibilityReportHandler
                 $rule_result = RuleResultBase::create_from_string($result_type_name);
                 $rule_result->setName($rule_thing->id);
                 $rule_result->setImpact($rule_thing->impact);
-                $rule_result->setDescription($rule_thing->description);
-                $rule_result->setHelp($rule_thing->help);
+                $rule_result->setDescriptionSharedString($this->sharedStringRepository->get_or_create_one($rule_thing->description));
+                $rule_result->setHelpSharedString($this->sharedStringRepository->get_or_create_one($rule_thing->help));
                 $rule_result->addTags($this->get_tags($obj, $rule_thing));
 
                 foreach($rule_thing->nodes as $node){
@@ -235,7 +250,7 @@ class AccessibilityReportHandler
                             }
                             $detail->setRelatedNodes($d->relatedNodes);
                             $detail->setImpact($d->impact);
-                            $detail->setMessage($d->message);
+                            $detail->setMessage($this->sharedStringRepository->get_or_create_one($d->message));
                             $this->entityManager->persist($detail);
 
                             $rule_result_node->addDetail($detail);
