@@ -11,6 +11,7 @@ use App\Entity\aXe\ScanResult;
 use App\Entity\ScanUrl;
 use App\Repository\aXe\SharedStringRepository;
 use App\Repository\aXe\TagRepository;
+use App\Repository\aXe\ScanResultRepository;
 use App\Repository\ScanUrlRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,18 +21,21 @@ class AccessibilityReportHandler
     private $entityManager;
 
     private $tagRepository;
+    private $scanResultRepository;
 
     public function __construct(
         ScanUrlRepository $scanUrlRepository,
         EntityManagerInterface $entityManager,
         TagRepository $tagRepository,
-        SharedStringRepository $sharedStringRepository
+        SharedStringRepository $sharedStringRepository,
+        ScanResultRepository $scanResultRepository
         ) {
         $this->scanUrlRepository = $scanUrlRepository;
         $this->entityManager = $entityManager;
 
         $this->tagRepository = $tagRepository;
         $this->sharedStringRepository = $sharedStringRepository;
+        $this->scanResultRepository = $scanResultRepository;
     }
 
     public function process_v2_tags_only($obj)
@@ -196,6 +200,18 @@ class AccessibilityReportHandler
     public function process_v3($obj)
     {
         $scanUrl = $this->sanity_check_obj_and_get_scan_url($obj);
+
+        $existing = $this
+                        ->scanResultRepository
+                        ->findOneBy(
+                            ['scanUrl' => $scanUrl]
+                        );
+
+        if($existing){
+            //If a crash happens, I think duplicates happen, so delete it
+            $this->entityManager->remove($existing);
+            $this->entityManager->flush();
+        }
 
         $this->build_shared_string_cache($obj);
 
