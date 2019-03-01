@@ -67,7 +67,7 @@ class MakeScanCommand extends AppCommandBase
 
         $scan = new Scan();
         $scan->setProperty($property);
-        $scan->setScanType(Scanner::TYPE_CRAWLER);
+        $scan->setScanType($scan_types);
         $this->entityManager->persist($scan);
 
         $scanUrl = new ScanUrl();
