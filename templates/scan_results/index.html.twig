@@ -4,29 +4,107 @@
 
 {% block body %}
 
-    <table>
+    <select id="what-to-show">
+        <option value="all">Show All</option>
+        <option value="violations" selected="selected">Show Violations</option>
+        <option value="incomplete">Show Incomplete</option>
+        <option value="pass" selected="selected">Show Passed</option>
+    </select>
+
+    <hr />
+
+    <style>
+        tbody tr {
+            background-color: rgba(0, 255, 0, 0.25);
+        }
+        tbody tr:not(.imcomplete-count-0) {
+            background-color: rgba(255, 255, 0, 0.25);
+        }
+        tbody tr:not(.violation-count-0) {
+            background-color: rgba(255, 0, 0, 0.25);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+
+    <table id="the-table">
         <thead>
             <tr>
-                <td>Id</td>
                 <td>Url</td>
-                <td>Message</td>
-                <td>Impact</td>
-                <td>Name</td>
-                <td>Tags</td>
+                <td>Passes</td>
+                <td>Incomplete but Serious or Critical</td>
+                <td>Critical Violations</td>
+                <td>Serious Violations</td>
+                <td>Moderate Violations</td>
+                <td>Minor Violations</td>
             </tr>
         </thead>
         <tbody>
     {% for r in report %}
-            <tr>
-                <td>{{r.id}}</td>
-                <td>{{r.url}}</td>
-                <td>{{r.message}}</td>
-                <td>{{r.impact}}</td>
-                <td>{{r.name}}</td>
-                <td>{{r.tag_name}}</td>
+        {% set row_classes = [
+            'violation-count-' ~ r.get_count_of_violations(),
+            'imcomplete-count-' ~ r.count_of_incomplete_but_serious_or_critical,
+            'non-pass-count-' ~ (r.get_count_of_violations() + r.count_of_incomplete_but_serious_or_critical),
+        ] %}
+            <tr class="{{ row_classes|join(' ') }}">
+                <td><a href="{{r.url}}" target="_blank" rel="noreferrer noopener nofollow">{{r.url}}</a></td>
+                <td>{{r.count_of_pass}}</td>
+                <td>{{r.count_of_incomplete_but_serious_or_critical}}</td>
+                <td>{{r.count_of_violations_critical}}</td>
+                <td>{{r.count_of_violations_serious}}</td>
+                <td>{{r.count_of_violations_moderate}}</td>
+                <td>{{r.count_of_violations_minor}}</td>
             </tr>
     {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        document
+            .querySelector('#what-to-show')
+            .addEventListener(
+                'change',
+                (evt) => {
+
+                    const
+                        value = evt.srcElement.value,
+                        table = document.querySelector('#the-table'),
+                        all_rows = table.querySelectorAll('tbody tr'),
+                        pass_rows = table.querySelectorAll('tbody tr.non-pass-count-0'),
+                        violation_rows = table.querySelectorAll('tbody tr:not(.violation-count-0)'),
+                        incomplete_rows = table.querySelectorAll('tbody tr:not(.imcomplete-count-0)')
+                    ;
+
+                    switch(value){
+                        case 'all':
+                            all_rows.forEach( row => row.classList.remove('hidden'));
+                            break;
+
+                        case 'violations':
+                            all_rows.forEach( row => row.classList.add('hidden'));
+                            violation_rows.forEach( row => row.classList.remove('hidden'));
+                            break;
+
+                        case 'incomplete':
+                            all_rows.forEach( row => row.classList.add('hidden'));
+                            incomplete_rows.forEach( row => row.classList.remove('hidden'));
+                            break;
+                        
+                        case 'pass':
+                            all_rows.forEach( row => row.classList.add('hidden'));
+                            pass_rows.forEach( row => row.classList.remove('hidden'));
+                            break;
+                    }
+
+                    //console.dir(all_rows);
+                    //console.dir(violation_rows);
+                    //console.dir(incomplete_rows);
+
+
+                }
+            )
+        ;
+    </script>
 
 {% endblock %}

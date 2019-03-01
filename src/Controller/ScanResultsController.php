@@ -2,18 +2,18 @@
 
 namespace App\Controller;
 
-use App\Service\AccessibilityReportHandler;
+use App\Report\SingleSiteRollup;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ScanResultsController extends AbstractController
 {
     /**
-     * @Route("/scan/results", name="scan_results")
+     * @Route("/scan/results/{scan_id}", name="scan_results", requirements={"scan_id"="\d+"})
      */
-    public function index(AccessibilityReportHandler $accessibilityReportHandler)
+    public function index(int $scan_id, SingleSiteRollup $singleSiteRollup)
     {
-        $report = $accessibilityReportHandler->get_report_for_single_scan_url(1);
+        $report = $singleSiteRollup->get_results($scan_id);
 
         // dd($report);
 
