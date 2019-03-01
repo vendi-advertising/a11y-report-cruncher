@@ -173,6 +173,7 @@ class ApiBatchController extends AbstractController
 
                         $existing = $scanUrlRepository->findOneBy(
                             [
+                                'scan' => $scanUrl->getScan(),
                                 'url' => $disc_url,
                             ]
                         );

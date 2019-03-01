@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Scans{% endblock %}
+
+{% block body %}
+
+<h1>Scans</h1>
+<ul>
+{% for scan in scans %}
+    <li>
+        <a href="{{
+            path(
+                'scan_results',
+                {
+                    'client_id': scan.property.client.id,
+                    'property_id': scan.property.id,
+                    'scan_id': scan.id,
+                }
+            ) }}">{{ scan.id }}</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

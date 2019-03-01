@@ -3,9 +3,64 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
+        <style>
+            html {
+                font-size: 62.5%;
+            }
+
+            body {
+                font-family: sans-serif;
+                font-size: 1.6rem;
+                margin: 0;
+                padding: 0;
+            }
+
+            header {
+                margin-bottom: 2rem;
+            }
+
+            header nav {
+                background-color: rgba(0, 0, 0, 0.25);
+                box-sizing: border-box;
+                padding: 0.5rem;
+            }
+
+            header nav ul,
+            header nav li {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            header nav li{
+                display: inline-block;
+            }
+
+            header nav li a {
+                color: #fff;
+                display: block;
+                padding: 0.25rem 0.5rem;
+                text-decoration: none;
+            }
+
+            header nav li a:hover {
+                background-color: #000;
+            }
+        </style>
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
+        {% block header %}
+            <header>
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="{{ path('clients') }}">View all clients</a>
+                        </li>
+                    </ul>
+                </nav>
+            </header>
+        {% endblock %}
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>

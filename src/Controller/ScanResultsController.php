@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -9,13 +11,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class ScanResultsController extends AbstractController
 {
     /**
-     * @Route("/scan/results/{scan_id}", name="scan_results", requirements={"scan_id"="\d+"})
+     * @Route("/client/{client_id}/property/{property_id}/scan/{scan_id}", name="scan_results", requirements={"client_id"="\d+", "property_id"="\d+", "scan_id"="\d+"})
      */
-    public function index(int $scan_id, SingleSiteRollup $singleSiteRollup)
+    public function index(int $client_id, int $property_id, int $scan_id, SingleSiteRollup $singleSiteRollup)
     {
         $report = $singleSiteRollup->get_results($scan_id);
-
-        // dd($report);
 
         return $this
                 ->render(

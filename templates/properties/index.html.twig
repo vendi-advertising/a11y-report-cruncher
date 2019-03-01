@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Properties{% endblock %}
+
+{% block body %}
+
+<h1>Properties</h1>
+<ul>
+{% for property in properties %}
+    <li>
+        <a href="{{ path('scans', { 'client_id': property.client.id, 'property_id': property.id}) }}">{{ property.name }}</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

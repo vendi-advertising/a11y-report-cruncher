@@ -94,7 +94,7 @@ class SingleSiteRollup
                         ON
                             s.id = su.scan_id
                         WHERE
-                            s.id = 1
+                            s.id = :scan_id
                             AND
                             ar.id IN
                             (
