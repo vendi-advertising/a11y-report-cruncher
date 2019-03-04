@@ -201,6 +201,8 @@ class AccessibilityReportHandler
     {
         $scanUrl = $this->sanity_check_obj_and_get_scan_url($obj);
 
+        $this->build_shared_string_cache($obj);
+
         $existing = $this
                         ->scanResultRepository
                         ->findOneBy(
@@ -212,8 +214,6 @@ class AccessibilityReportHandler
             $this->entityManager->remove($existing);
             $this->entityManager->flush();
         }
-
-        $this->build_shared_string_cache($obj);
 
         $scan_result = new ScanResult();
         $scan_result->setScanUrl($scanUrl);
